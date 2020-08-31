@@ -51,6 +51,7 @@
     <Compile Include="ModbusHoldingRegister.cs" />
     <Compile Include="ModbusIntegratorEventService.cs" />
     <Compile Include="ModbusIntegratorProgram.cs" />
+    <Compile Include="ModbusIntegratorProgramLocalClient.cs" />
     <Compile Include="ModbusIntegratorProgramWorker.cs" />
     <Compile Include="ModbusItem.cs" />
     <Compile Include="ModbusNode.cs" />
@@ -74,6 +75,12 @@
     <EmbeddedResource Include="ProjectInstaller.resx">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="ModbusIntegratorEventClient\ModbusIntegratorEventClient.csproj">
+      <Project>{995d0b87-8ccc-4b81-a63d-cfee69366e5a}</Project>
+      <Name>ModbusIntegratorEventClient</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

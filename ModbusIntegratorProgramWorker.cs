@@ -12,19 +12,19 @@ namespace ModbusIntegrator
     {
         static void Worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            var worker = (BackgroundWorker)sender;
+            //var worker = (BackgroundWorker)sender;
             Console.WriteLine($"{e.UserState}");
         }
 
         static void Worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            var worker = (BackgroundWorker)sender;
+            //var worker = (BackgroundWorker)sender;
 
         }
 
         static void Worker_DoWork(object sender, DoWorkEventArgs e)
         {
-            var worker = (BackgroundWorker)sender;
+            //var worker = (BackgroundWorker)sender;
             //var lastsecond = DateTime.Now.Second;
             //var lastminute = -1;
             //var lasthour = -1;
@@ -59,7 +59,7 @@ namespace ModbusIntegrator
                 {
                     Server = { SendTimeout = socketTimeOut, ReceiveTimeout = socketTimeOut }
                 };
-                Say(worker, $"Сокет localhost:{tt.Port} прослушивается...");
+                Say($"Сокет localhost:{tt.Port} прослушивается...");
                 do
                 {
                     Thread.Sleep(1);
@@ -75,7 +75,7 @@ namespace ModbusIntegrator
                             if (!worker.CancellationPending) continue;
                             listener.Stop();
                             e.Cancel = true;
-                            Say(worker, $"Сокет TCP({tt.Port}) - остановка прослушивания.");
+                            Say($"Сокет TCP({tt.Port}) - остановка прослушивания.");
                             return;
                         }
                         var clientData = listener.AcceptTcpClient();
@@ -93,7 +93,7 @@ namespace ModbusIntegrator
                                     //Thread.Sleep(1);
                                     var list = new List<string>();
                                     for (var i = 0; i < count; i++) list.Add(string.Format("{0}", bytes[i]));
-                                    //Say(worker, "Q:" + string.Join(",", list));
+                                    //Say("Q:" + string.Join(",", list));
 
                                     if (count < 6) continue;
                                     var header1 = Convert.ToUInt16(bytes[0] * 256 + bytes[1]);
@@ -149,7 +149,7 @@ namespace ModbusIntegrator
                                             }
                                             list.Clear();
                                             list.AddRange(answer.Select(t => string.Format("{0}", t)));
-                                            //Say(worker, "A:" + string.Join(",", list));
+                                            //Say("A:" + string.Join(",", list));
                                             msg = answer.ToArray();
                                             stream.Write(msg, 0, msg.Length);
                                             break;
@@ -172,7 +172,7 @@ namespace ModbusIntegrator
                                             while (!DictModbusItems.TryUpdate(childName, modbusHr, modbusHr)) Thread.Sleep(10);
                                             list.Clear();
                                             list.AddRange(answer.Select(t => string.Format("{0}", t)));
-                                            //Say(worker, "A:" + string.Join(",", list));
+                                            //Say("A:" + string.Join(",", list));
                                             msg = answer.ToArray();
                                             stream.Write(msg, 0, msg.Length);
                                             break;
@@ -201,7 +201,7 @@ namespace ModbusIntegrator
                                             }
                                             list.Clear();
                                             list.AddRange(answer.Select(t => string.Format("{0}", t)));
-                                            //Say(worker, "A:" + string.Join(",", list));
+                                            //Say("A:" + string.Join(",", list));
                                             msg = answer.ToArray();
                                             stream.Write(msg, 0, msg.Length);
                                             break;
@@ -212,25 +212,25 @@ namespace ModbusIntegrator
                             }
                             catch (Exception ex)
                             {
-                                if (!worker.CancellationPending) Say(worker, ex.Message);
+                                if (!worker.CancellationPending) Say(ex.Message);
                             }
                         });
                     }
                     catch (SocketException exception)
                     {
                         if (!worker.CancellationPending)
-                            Say(worker, $"Ошибка приёма: {exception.Message}");
+                            Say($"Ошибка приёма: {exception.Message}");
                         break;
                     }
                 } while (!worker.CancellationPending);
                 listener.Stop();
-                Say(worker, $"Сокет TCP({tt.Port}) - остановка прослушивания.");
+                Say($"Сокет TCP({tt.Port}) - остановка прослушивания.");
             }
 
             #endregion работа с Tcp портом
         }
 
-        private static void Say(BackgroundWorker worker, string message)
+        private static void Say(string message)
         {
             worker.ReportProgress(-1, message);
         }

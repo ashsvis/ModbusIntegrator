@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ModbusIntegratorEventClient;
+using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.IO;
@@ -11,6 +12,8 @@ namespace ModbusIntegrator
         private static readonly ConcurrentDictionary<string, ModbusItem> DictModbusItems =
             new ConcurrentDictionary<string, ModbusItem>();
 
+        static BackgroundWorker worker;
+
         static void Main(string[] args)
         {
             // загрузка текущей конфигурации сервера
@@ -18,12 +21,15 @@ namespace ModbusIntegrator
             var mif = new MemIniFile(configName);
 
             // запуск фонового процесса для прослушивания сокета Modbus Tcp 502
-            var worker = new BackgroundWorker { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
+            worker = new BackgroundWorker { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
             worker.DoWork += Worker_DoWork;
             worker.RunWorkerCompleted += Worker_RunWorkerCompleted;
             worker.ProgressChanged += Worker_ProgressChanged;
             var tcptuning = new TcpTuning { Port = 502 };
             worker.RunWorkerAsync(tcptuning);
+
+            localEventClient = new EventClient();
+            localEventClient.Connect(new[] { "Fetching", "Archives" }, PropertyUpdate, ShowError, UpdateLocalConnectionStatus);
 
             // если запускает пользователь сам
             if (Environment.UserInteractive)
