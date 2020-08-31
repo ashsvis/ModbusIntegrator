@@ -19,6 +19,7 @@ namespace ModbusIntegrator
 
         static void PropertyUpdate(DateTime servertime, string category, string pointname, string propname, string value)
         {
+            Say($"Prop update at {servertime}: {category}.{pointname}.{propname}={value}");
             switch (category)
             {
                 case "Fetching":
