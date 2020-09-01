@@ -28,8 +28,8 @@ namespace ModbusIntegrator
             var tcptuning = new TcpTuning { Port = 502 };
             worker.RunWorkerAsync(tcptuning);
 
-            localEventClient = new EventClient();
-            localEventClient.Connect(new[] { "Fetching", "Archives" }, PropertyUpdate, ShowError, UpdateLocalConnectionStatus);
+            locEvClient = new EventClient();
+            locEvClient.Connect(new[] { "Config", "Fetching", "Archives" }, PropertyUpdate, ShowError, UpdateLocalConnectionStatus);
 
             // если запускает пользователь сам
             if (Environment.UserInteractive)

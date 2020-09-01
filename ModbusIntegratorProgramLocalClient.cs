@@ -5,7 +5,7 @@ namespace ModbusIntegrator
 {
     partial class ModbusIntegratorProgram
     {
-        static EventClient localEventClient;
+        static EventClient locEvClient;
 
         static void UpdateLocalConnectionStatus(Guid clientId, ClientConnectionStatus status)
         {
@@ -26,6 +26,8 @@ namespace ModbusIntegrator
                     break;
                 case "Archives":
                      break;
+                case "Config":
+                    break;
             }
         }
 
