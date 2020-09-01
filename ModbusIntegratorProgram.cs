@@ -29,7 +29,7 @@ namespace ModbusIntegrator
             worker.RunWorkerAsync(tcptuning);
 
             locEvClient = new EventClient();
-            locEvClient.Connect(new[] { "Config", "Fetching", "Archives" }, PropertyUpdate, ShowError, UpdateLocalConnectionStatus);
+            locEvClient.Connect(new[] { "config", "fetching", "archives" }, PropertyUpdate, ShowError, UpdateLocalConnectionStatus);
 
             // если запускает пользователь сам
             if (Environment.UserInteractive)

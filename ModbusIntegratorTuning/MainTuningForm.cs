@@ -18,7 +18,7 @@ namespace ModbusIntegratorTuning
 
         private void MainClientForm_Load(object sender, EventArgs e)
         {
-            locEvClient.Connect(new[] {  "Config", "Fetching", "Archives" }, PropertyUpdate, ShowError, UpdateLocalConnectionStatus);
+            locEvClient.Connect(new[] {  "config", "fetching", "archives" }, PropertyUpdate, ShowError, UpdateLocalConnectionStatus);
 
         }
 
@@ -64,9 +64,9 @@ namespace ModbusIntegratorTuning
 
         private void PropertyUpdate(DateTime servertime, string category, string pointname, string propname, string value)
         {
-            switch (category)
+            switch (category.ToLower())
             {
-                case "Fetching":
+                case "fetching":
                     var method1 = new MethodInvoker(() =>
                     {
                         listBox1.Items.Insert(0, $"{pointname} {propname} {value}");
@@ -76,7 +76,7 @@ namespace ModbusIntegratorTuning
                     else
                         method1();
                     break;
-                case "Archives":
+                case "archives":
                     var method2 = new MethodInvoker(() =>
                     {
                         listBox2.Items.Insert(0, $"{pointname} {propname} {value}");
@@ -86,34 +86,39 @@ namespace ModbusIntegratorTuning
                     else
                         method2();
                     break;
-                case "Config":
+                case "config":
                     var method3 = new MethodInvoker(() =>
                     {
-                        var tree = treeView1.Nodes;
-                        var nodes = tree.Find(value, true);
-                        if (nodes.Length == 0)
+                        switch (pointname.ToLower())
                         {
-                            treeView1.BeginUpdate();
-                            try
-                            {
-                                foreach (var item in value.Split('\\'))
+                            case "add":
+                                var tree = treeView1.Nodes;
+                                var nodes = tree.Find(value, true);
+                                if (nodes.Length == 0)
                                 {
-                                    nodes = tree.Find(item, false);
-                                    if (nodes.Length == 0)
+                                    treeView1.BeginUpdate();
+                                    try
                                     {
-                                        var node = new TreeNode(item) { Name = item };
-                                        tree.Add(node);
-                                        tree = node.Nodes;
+                                        foreach (var item in value.Split('\\'))
+                                        {
+                                            nodes = tree.Find(item, false);
+                                            if (nodes.Length == 0)
+                                            {
+                                                var node = new TreeNode(item) { Name = item };
+                                                tree.Add(node);
+                                                tree = node.Nodes;
+                                            }
+                                            else
+                                                tree = nodes[0].Nodes;
+                                        }
+                                        treeView1.Sort();
                                     }
-                                    else
-                                        tree = nodes[0].Nodes;
+                                    finally
+                                    {
+                                        treeView1.EndUpdate();
+                                    }
                                 }
-                                treeView1.Sort();
-                            }
-                            finally
-                            {
-                                treeView1.EndUpdate();
-                            }
+                                break;
                         }
                     });
                     if (InvokeRequired)
@@ -132,35 +137,33 @@ namespace ModbusIntegratorTuning
         private void addItemToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (treeView1.Nodes.Count == 0)
-            {
-                var node = new TreeNode("default");
-                treeView1.Nodes.Add(node);
-                treeView1.SelectedNode = node;
-                locEvClient.UpdateProperty("Config", "add default", node.FullPath, node.FullPath);
-            }
+                AddNodeToTree(treeView1.Nodes, "default");
             else
             {
                 var parentNode = treeView1.SelectedNode;
                 if (parentNode == null)
-                {
-                    var node = new TreeNode($"socket {treeView1.Nodes.Count}");
-                    treeView1.Nodes.Add(node);
-                    treeView1.SelectedNode = node;
-                    locEvClient.UpdateProperty("Config", "add socket", node.FullPath, node.FullPath);
-                }
+                    AddNodeToTree(treeView1.Nodes, $"socket {treeView1.Nodes.Count}");
                 else
                 {
                     switch (parentNode.Level)
                     {
                         case 0:
-                            var node = new TreeNode($"node {parentNode.Nodes.Count + 1}");
-                            parentNode.Nodes.Add(node);
-                            treeView1.SelectedNode = node;
-                            locEvClient.UpdateProperty("Config", "add node", node.FullPath, node.FullPath);
+                            AddNodeToTree(parentNode.Nodes, $"node {parentNode.Nodes.Count + 1}");
+                            break;
+                        case 1:
+                            AddNodeToTree(parentNode.Nodes, $"item {parentNode.Nodes.Count + 1}");
                             break;
                     }
                 }
             }
+        }
+
+        private void AddNodeToTree(TreeNodeCollection nodes, string name)
+        {
+            TreeNode node = new TreeNode(name) { Name = name };
+            nodes.Add(node);
+            treeView1.SelectedNode = node;
+            locEvClient.UpdateProperty("config", "add", node.FullPath, node.FullPath);
         }
 
         private void treeView1_MouseDown(object sender, MouseEventArgs e)
