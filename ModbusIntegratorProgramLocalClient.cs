@@ -1,5 +1,6 @@
 ﻿using ModbusIntegratorEventClient;
 using System;
+using System.Threading;
 
 namespace ModbusIntegrator
 {
@@ -21,8 +22,17 @@ namespace ModbusIntegrator
                         itemName = $"{socketName}\\{mif.ReadString($"{socketName}_nodes", nodeName, nodeName)}";
                         locEvClient.UpdateProperty("config", "add", itemName, nodeName);
                         foreach (var key in mif.ReadSectionKeys(nodeName))
-                        {
                             locEvClient.UpdateProperty("fetching", $"{socketName}\\{nodeName}", key, mif.ReadString(nodeName, key, ""));
+                        var fetchParamsSection = $"{nodeName}_FetchParams";
+                        if (mif.SectionExists(fetchParamsSection))
+                        {
+                            itemName = $"{socketName}\\{nodeName}\\FetchParams";
+                            locEvClient.UpdateProperty("config", "add", itemName, nodeName);
+                            foreach (var key in mif.ReadSectionKeys(fetchParamsSection))
+                            {
+                                locEvClient.UpdateProperty("fetching", $"{socketName}\\{nodeName}\\FetchParams",
+                                    key, mif.ReadString(fetchParamsSection, key, ""));
+                            }
                         }
                     }
                 }

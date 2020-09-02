@@ -1,6 +1,7 @@
 ﻿using ModbusIntegratorEventClient;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace ModbusIntegratorTuning
@@ -18,6 +19,7 @@ namespace ModbusIntegratorTuning
 
         private void MainClientForm_Load(object sender, EventArgs e)
         {
+            Thread.Sleep(1000);
             locEvClient.Connect(new[] {  "config", "fetching", "archives" }, PropertyUpdate, ShowError, UpdateLocalConnectionStatus);
 
         }
@@ -30,7 +32,7 @@ namespace ModbusIntegratorTuning
                 {
                     case ClientConnectionStatus.Opened:
                         scServerConnected.State = true;
-                        tsslStatus.Text = "Подключение восстановлено.";
+                        tsslStatus.Text = "Подключение актуально.";
                         break;
                     case ClientConnectionStatus.Opening:
                         scServerConnected.State = null;
@@ -70,7 +72,6 @@ namespace ModbusIntegratorTuning
                 case "fetching":
                     var method1 = new MethodInvoker(() =>
                     {
-                        //lvProps.Items.Add($"{pointname} {propname} {value}");
                         var key = $"{pointname}\\{propname}";
                         if (!dictionary.ContainsKey(key))
                             dictionary.Add(key, value);
@@ -185,7 +186,13 @@ namespace ModbusIntegratorTuning
             foreach (var key in dictionary.Keys)
             {
                 if (key.StartsWith(akey))
-                    lvProps.Items.Add($"{key.Substring(akey.Length + 1)}={dictionary[key]}");
+                {
+                    var prop = $"{key.Substring(akey.Length + 1)}";
+                    if (prop.IndexOf('\\') < 0)
+                    {
+                        lvProps.Items.Add(prop).SubItems.Add(dictionary[key]);
+                    }
+                }
             }
         }
     }
