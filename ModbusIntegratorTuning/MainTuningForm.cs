@@ -200,11 +200,12 @@ namespace ModbusIntegratorTuning
         {
             try
             {
+                serviceController1.MachineName = Environment.MachineName;
                 serviceController1.Stop();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, ex.FullMessage(), "Останов службы", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, ex.Message, "Останов службы", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -212,11 +213,12 @@ namespace ModbusIntegratorTuning
         {
             try
             {
+                serviceController1.MachineName = Environment.MachineName;
                 serviceController1.Start();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, ex.FullMessage(), "Запуск службы", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, ex.Message, "Запуск службы", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

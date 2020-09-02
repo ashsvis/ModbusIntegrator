@@ -34,6 +34,21 @@ namespace ModbusIntegrator
                                     key, mif.ReadString(fetchParamsSection, key, ""));
                             }
                         }
+                        var archives = "HourArchive;DayArchive;MonthArchive".Split(';');
+                        foreach (var archiveName in archives)
+                        {
+                            var archiveSection = $"{nodeName}_{archiveName}";
+                            if (mif.SectionExists(archiveSection))
+                            {
+                                itemName = $"{socketName}\\{nodeName}\\archives\\{archiveName}";
+                                locEvClient.UpdateProperty("config", "add", itemName, nodeName);
+                                foreach (var key in mif.ReadSectionKeys(archiveSection))
+                                {
+                                    locEvClient.UpdateProperty("fetching", $"{socketName}\\{nodeName}\\archives\\{archiveName}",
+                                        key, mif.ReadString(archiveSection, key, ""));
+                                }
+                            }
+                        }
                     }
                 }
             }
