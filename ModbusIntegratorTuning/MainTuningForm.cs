@@ -198,54 +198,6 @@ namespace ModbusIntegratorTuning
             }
         }
 
-        private void stopToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            serviceController1.Refresh();
-            if (serviceController1.Status == ServiceControllerStatus.Running)
-            {
-                try
-                {
-                    serviceController1.MachineName = Environment.MachineName;
-                    using (var mcWin32 = new ManagementClass("Win32_OperatingSystem"))
-                    {
-                        mcWin32.Get();
-                        // без прав ничего не выйдет
-                        mcWin32.Scope.Options.EnablePrivileges = true;
-                        serviceController1.Stop();
-                    }
-                    serviceController1.WaitForStatus(ServiceControllerStatus.Stopped);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(this, ex.Message, "Останов службы", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
-
-        private void startToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            serviceController1.Refresh();
-            if (serviceController1.Status == ServiceControllerStatus.Stopped)
-            {
-                try
-                {
-                    serviceController1.MachineName = Environment.MachineName;
-                    using (var mcWin32 = new ManagementClass("Win32_OperatingSystem"))
-                    {
-                        mcWin32.Get();
-                        // без прав ничего не выйдет
-                        mcWin32.Scope.Options.EnablePrivileges = true;
-                        serviceController1.Start();
-                    }
-                    serviceController1.WaitForStatus(ServiceControllerStatus.Running);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(this, ex.Message, "Запуск службы", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
-
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Close();
