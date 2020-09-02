@@ -27,7 +27,8 @@ namespace ModbusIntegrator
             worker.DoWork += Worker_DoWork;
             worker.RunWorkerCompleted += Worker_RunWorkerCompleted;
             worker.ProgressChanged += Worker_ProgressChanged;
-            var tcptuning = new TcpTuning { Port = int.Parse(mif.ReadString("default", "port", "502")) };
+            int.TryParse(mif.ReadString("default", "port", "502"), out int port);
+            var tcptuning = new TcpTuning { Port = port };
             worker.RunWorkerAsync(tcptuning);
 
             locEvClient = new EventClient();

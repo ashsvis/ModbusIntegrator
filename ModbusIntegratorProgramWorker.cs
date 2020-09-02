@@ -59,7 +59,8 @@ namespace ModbusIntegrator
                 {
                     Server = { SendTimeout = socketTimeOut, ReceiveTimeout = socketTimeOut }
                 };
-                //Say($"Сокет localhost:{tt.Port} прослушивается...");
+                Thread.Sleep(100);
+                Say($"\nСокет localhost:{tt.Port} прослушивается...");
                 do
                 {
                     Thread.Sleep(1);
@@ -75,7 +76,7 @@ namespace ModbusIntegrator
                             if (!worker.CancellationPending) continue;
                             listener.Stop();
                             e.Cancel = true;
-                            Say($"Сокет TCP({tt.Port}) - остановка прослушивания.");
+                            Say($"\nСокет TCP({tt.Port}) - остановка прослушивания.");
                             return;
                         }
                         var clientData = listener.AcceptTcpClient();
@@ -226,7 +227,7 @@ namespace ModbusIntegrator
                     }
                 } while (!worker.CancellationPending);
                 listener.Stop();
-                Say($"Сокет TCP({tt.Port}) - остановка прослушивания.");
+                Say($"\nСокет TCP({tt.Port}) - остановка прослушивания.");
             }
 
             #endregion работа с Tcp портом

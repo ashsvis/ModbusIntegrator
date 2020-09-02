@@ -12,14 +12,18 @@ namespace ModbusIntegrator
             //Say($"Local client: {status}");
             if (status == ClientConnectionStatus.Opened)
             {
-                foreach (var socketName in mif.ReadSectionKeys("sockets"))
+                foreach (var socketName in mif.ReadSectionValues("sockets"))
                 {
                     var itemName = socketName;
                     locEvClient.UpdateProperty("config", "add", itemName, itemName);
-                    foreach (var nodeName in mif.ReadSectionKeys($"{socketName}_nodes"))
+                    foreach (var nodeName in mif.ReadSectionValues($"{socketName}_nodes"))
                     {
                         itemName = $"{socketName}\\{mif.ReadString($"{socketName}_nodes", nodeName, nodeName)}";
-                        locEvClient.UpdateProperty("config", "add", itemName, itemName);
+                        locEvClient.UpdateProperty("config", "add", itemName, nodeName);
+                        foreach (var key in mif.ReadSectionKeys(nodeName))
+                        {
+                            locEvClient.UpdateProperty("fetching", $"{socketName}\\{nodeName}", key, mif.ReadString(nodeName, key, ""));
+                        }
                     }
                 }
             }

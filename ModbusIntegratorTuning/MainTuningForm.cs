@@ -1,5 +1,6 @@
 ﻿using ModbusIntegratorEventClient;
 using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 
 namespace ModbusIntegratorTuning
@@ -7,6 +8,7 @@ namespace ModbusIntegratorTuning
     public partial class MainTuningForm : Form
     {
         private readonly EventClient locEvClient;
+        private readonly Dictionary<string, string> dictionary = new Dictionary<string, string>();
 
         public MainTuningForm()
         {
@@ -28,6 +30,7 @@ namespace ModbusIntegratorTuning
                 {
                     case ClientConnectionStatus.Opened:
                         scServerConnected.State = true;
+                        tsslStatus.Text = "Подключение восстановлено.";
                         break;
                     case ClientConnectionStatus.Opening:
                         scServerConnected.State = null;
@@ -38,8 +41,8 @@ namespace ModbusIntegratorTuning
                 }
                 if (status == ClientConnectionStatus.Opening)
                 {
-                    listBox1.Items.Clear();
-                    listBox2.Items.Clear();
+                    //listBox1.Items.Clear();
+                    //listBox2.Items.Clear();
                 }
             });
             if (InvokeRequired)
@@ -52,7 +55,7 @@ namespace ModbusIntegratorTuning
         {
             var method = new MethodInvoker(() =>
             {
-                Text = errormessage;
+                tsslStatus.Text = errormessage;
             });
             if (InvokeRequired)
                 BeginInvoke(method);
@@ -67,7 +70,12 @@ namespace ModbusIntegratorTuning
                 case "fetching":
                     var method1 = new MethodInvoker(() =>
                     {
-                        listBox1.Items.Insert(0, $"{pointname} {propname} {value}");
+                        //lvProps.Items.Add($"{pointname} {propname} {value}");
+                        var key = $"{pointname}\\{propname}";
+                        if (!dictionary.ContainsKey(key))
+                            dictionary.Add(key, value);
+                        else
+                            dictionary[key] = value;
                     });
                     if (InvokeRequired)
                         BeginInvoke(method1);
@@ -77,7 +85,7 @@ namespace ModbusIntegratorTuning
                 case "archives":
                     var method2 = new MethodInvoker(() =>
                     {
-                        listBox2.Items.Insert(0, $"{pointname} {propname} {value}");
+                        //listBox2.Items.Insert(0, $"{pointname} {propname} {value}");
                     });
                     if (InvokeRequired)
                         BeginInvoke(method2);
@@ -90,14 +98,14 @@ namespace ModbusIntegratorTuning
                         switch (pointname.ToLower())
                         {
                             case "add":
-                                var tree = treeView1.Nodes;
-                                var nodes = tree.Find(value, true);
+                                var tree = tvNodes.Nodes;
+                                var nodes = tree.Find(propname, true);
                                 if (nodes.Length == 0)
                                 {
-                                    treeView1.BeginUpdate();
+                                    tvNodes.BeginUpdate();
                                     try
                                     {
-                                        foreach (var item in value.Split('\\'))
+                                        foreach (var item in propname.Split('\\'))
                                         {
                                             nodes = tree.Find(item, false);
                                             if (nodes.Length == 0)
@@ -109,11 +117,11 @@ namespace ModbusIntegratorTuning
                                             else
                                                 tree = nodes[0].Nodes;
                                         }
-                                        treeView1.Sort();
+                                        tvNodes.Sort();
                                     }
                                     finally
                                     {
-                                        treeView1.EndUpdate();
+                                        tvNodes.EndUpdate();
                                     }
                                 }
                                 break;
@@ -134,13 +142,13 @@ namespace ModbusIntegratorTuning
 
         private void addItemToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (treeView1.Nodes.Count == 0)
-                AddNodeToTree(treeView1.Nodes, "default");
+            if (tvNodes.Nodes.Count == 0)
+                AddNodeToTree(tvNodes.Nodes, "default");
             else
             {
-                var parentNode = treeView1.SelectedNode;
+                var parentNode = tvNodes.SelectedNode;
                 if (parentNode == null)
-                    AddNodeToTree(treeView1.Nodes, $"socket {treeView1.Nodes.Count}");
+                    AddNodeToTree(tvNodes.Nodes, $"socket {tvNodes.Nodes.Count}");
                 else
                 {
                     switch (parentNode.Level)
@@ -160,13 +168,25 @@ namespace ModbusIntegratorTuning
         {
             TreeNode node = new TreeNode(name) { Name = name };
             nodes.Add(node);
-            treeView1.SelectedNode = node;
+            tvNodes.SelectedNode = node;
             locEvClient.UpdateProperty("config", "add", node.FullPath, node.FullPath);
         }
 
         private void treeView1_MouseDown(object sender, MouseEventArgs e)
         {
-            treeView1.SelectedNode = treeView1.GetNodeAt(e.Location);
+            tvNodes.SelectedNode = tvNodes.GetNodeAt(e.Location);
+            if (tvNodes.SelectedNode == null) tsslStatus.Text = "";
+        }
+
+        private void tvNodes_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            var akey = $"{e.Node?.FullPath}";
+            lvProps.Items.Clear();
+            foreach (var key in dictionary.Keys)
+            {
+                if (key.StartsWith(akey))
+                    lvProps.Items.Add($"{key.Substring(akey.Length + 1)}={dictionary[key]}");
+            }
         }
     }
 }
