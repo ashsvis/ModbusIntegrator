@@ -1,8 +1,6 @@
 ﻿using ModbusIntegratorEventClient;
 using System;
 using System.Windows.Forms;
-using System.Linq;
-using System.IO;
 
 namespace ModbusIntegratorTuning
 {

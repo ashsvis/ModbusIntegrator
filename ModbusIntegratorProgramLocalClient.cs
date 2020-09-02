@@ -9,7 +9,20 @@ namespace ModbusIntegrator
 
         static void UpdateLocalConnectionStatus(Guid clientId, ClientConnectionStatus status)
         {
-            Say($"Local client: {status}");
+            //Say($"Local client: {status}");
+            if (status == ClientConnectionStatus.Opened)
+            {
+                foreach (var socketName in mif.ReadSectionKeys("sockets"))
+                {
+                    var itemName = socketName;
+                    locEvClient.UpdateProperty("config", "add", itemName, itemName);
+                    foreach (var nodeName in mif.ReadSectionKeys($"{socketName}_nodes"))
+                    {
+                        itemName = $"{socketName}\\{mif.ReadString($"{socketName}_nodes", nodeName, nodeName)}";
+                        locEvClient.UpdateProperty("config", "add", itemName, itemName);
+                    }
+                }
+            }
         }
 
         static void ShowError(string errormessage)
@@ -19,14 +32,20 @@ namespace ModbusIntegrator
 
         static void PropertyUpdate(DateTime servertime, string category, string pointname, string propname, string value)
         {
-            Say($"Prop update at {servertime}: {category}.{pointname}.{propname}={value}");
-            switch (category)
+            //Say($"Prop update at {servertime}: {category}.{pointname}.{propname}={value}");
+            switch (category.ToLower())
             {
-                case "Fetching":
+                case "fetching":
                     break;
-                case "Archives":
+                case "archives":
                      break;
-                case "Config":
+                case "config":
+                    //switch (pointname.ToLower())
+                    //{
+                    //    case "add":
+                    //        var section = propname;
+                    //        break;
+                    //}
                     break;
             }
         }

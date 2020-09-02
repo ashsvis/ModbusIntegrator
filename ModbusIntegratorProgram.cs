@@ -12,20 +12,22 @@ namespace ModbusIntegrator
         private static readonly ConcurrentDictionary<string, ModbusItem> DictModbusItems =
             new ConcurrentDictionary<string, ModbusItem>();
 
+        private static MemIniFile mif;
+
         static BackgroundWorker worker;
 
         static void Main(string[] args)
         {
             // загрузка текущей конфигурации сервера
             var configName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ModbusIntegrator.ini");
-            var mif = new MemIniFile(configName);
+            mif = new MemIniFile(configName);
 
             // запуск фонового процесса для прослушивания сокета Modbus Tcp 502
             worker = new BackgroundWorker { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
             worker.DoWork += Worker_DoWork;
             worker.RunWorkerCompleted += Worker_RunWorkerCompleted;
             worker.ProgressChanged += Worker_ProgressChanged;
-            var tcptuning = new TcpTuning { Port = 502 };
+            var tcptuning = new TcpTuning { Port = int.Parse(mif.ReadString("default", "port", "502")) };
             worker.RunWorkerAsync(tcptuning);
 
             locEvClient = new EventClient();
@@ -38,7 +40,7 @@ namespace ModbusIntegrator
                 s.Start();
                 try
                 {
-                    Console.WriteLine("Modbus Integrator, ver 1.0");
+                    Console.WriteLine($"{mif.ReadString("root", "descriptor", "Unknown program")}, ver {mif.ReadString("root", "version", "unknown")}");
                     Console.WriteLine();
                     Console.WriteLine("Type any key to exit");
                     Console.ReadKey();

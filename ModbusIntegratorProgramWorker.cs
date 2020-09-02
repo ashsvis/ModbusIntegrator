@@ -59,7 +59,7 @@ namespace ModbusIntegrator
                 {
                     Server = { SendTimeout = socketTimeOut, ReceiveTimeout = socketTimeOut }
                 };
-                Say($"Сокет localhost:{tt.Port} прослушивается...");
+                //Say($"Сокет localhost:{tt.Port} прослушивается...");
                 do
                 {
                     Thread.Sleep(1);
