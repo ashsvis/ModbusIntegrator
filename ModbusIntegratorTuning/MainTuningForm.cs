@@ -195,5 +195,34 @@ namespace ModbusIntegratorTuning
                 }
             }
         }
+
+        private void stopToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                serviceController1.Stop();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.FullMessage(), "Останов службы", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void startToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                serviceController1.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.FullMessage(), "Запуск службы", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
     }
 }
