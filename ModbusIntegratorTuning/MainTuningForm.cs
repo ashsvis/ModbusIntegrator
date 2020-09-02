@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.ServiceProcess;
 using System.Threading;
 using System.Windows.Forms;
-using System.Management;
 
 namespace ModbusIntegratorTuning
 {
@@ -206,13 +205,8 @@ namespace ModbusIntegratorTuning
                 try
                 {
                     serviceController1.MachineName = Environment.MachineName;
-                    using (var mcWin32 = new ManagementClass("Win32_OperatingSystem"))
-                    {
-                        mcWin32.Get();
-                        // без прав ничего не выйдет
-                        mcWin32.Scope.Options.EnablePrivileges = true;
-                        serviceController1.Stop();
-                    }
+                    // чтобы это сработало, необходимо запустить это приложение с правами администратора.
+                    serviceController1.Stop();
                     serviceController1.WaitForStatus(ServiceControllerStatus.Stopped);
                 }
                 catch (Exception ex)
@@ -230,13 +224,8 @@ namespace ModbusIntegratorTuning
                 try
                 {
                     serviceController1.MachineName = Environment.MachineName;
-                    using (var mcWin32 = new ManagementClass("Win32_OperatingSystem"))
-                    {
-                        mcWin32.Get();
-                        // без прав ничего не выйдет
-                        mcWin32.Scope.Options.EnablePrivileges = true;
-                        serviceController1.Start();
-                    }
+                    // чтобы это сработало, необходимо запустить это приложение с правами администратора.
+                    serviceController1.Start();
                     serviceController1.WaitForStatus(ServiceControllerStatus.Running);
                 }
                 catch (Exception ex)
