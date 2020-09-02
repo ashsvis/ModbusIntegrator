@@ -1,8 +1,10 @@
 ﻿using ModbusIntegratorEventClient;
 using System;
 using System.Collections.Generic;
+using System.ServiceProcess;
 using System.Threading;
 using System.Windows.Forms;
+using System.Management;
 
 namespace ModbusIntegratorTuning
 {
@@ -198,27 +200,49 @@ namespace ModbusIntegratorTuning
 
         private void stopToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            try
+            serviceController1.Refresh();
+            if (serviceController1.Status == ServiceControllerStatus.Running)
             {
-                serviceController1.MachineName = Environment.MachineName;
-                serviceController1.Stop();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(this, ex.Message, "Останов службы", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                try
+                {
+                    serviceController1.MachineName = Environment.MachineName;
+                    using (var mcWin32 = new ManagementClass("Win32_OperatingSystem"))
+                    {
+                        mcWin32.Get();
+                        // без прав ничего не выйдет
+                        mcWin32.Scope.Options.EnablePrivileges = true;
+                        serviceController1.Stop();
+                    }
+                    serviceController1.WaitForStatus(ServiceControllerStatus.Stopped);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, ex.Message, "Останов службы", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
         private void startToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            try
+            serviceController1.Refresh();
+            if (serviceController1.Status == ServiceControllerStatus.Stopped)
             {
-                serviceController1.MachineName = Environment.MachineName;
-                serviceController1.Start();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(this, ex.Message, "Запуск службы", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                try
+                {
+                    serviceController1.MachineName = Environment.MachineName;
+                    using (var mcWin32 = new ManagementClass("Win32_OperatingSystem"))
+                    {
+                        mcWin32.Get();
+                        // без прав ничего не выйдет
+                        mcWin32.Scope.Options.EnablePrivileges = true;
+                        serviceController1.Start();
+                    }
+                    serviceController1.WaitForStatus(ServiceControllerStatus.Running);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, ex.Message, "Запуск службы", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
