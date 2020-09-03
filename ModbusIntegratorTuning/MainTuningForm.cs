@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceProcess;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace ModbusIntegratorTuning
@@ -97,11 +96,12 @@ namespace ModbusIntegratorTuning
                         switch (pointname.ToLower())
                         {
                             case "add":
-                                var tree = tvNodes.Nodes;
+                                var treeNodes = propname.StartsWith("root") ? tvSources : tvNodes;
+                                var tree = treeNodes.Nodes;
                                 var nodes = tree.Find(propname, true);
                                 if (nodes.Length == 0)
                                 {
-                                    tvNodes.BeginUpdate();
+                                    treeNodes.BeginUpdate();
                                     try
                                     {
                                         foreach (var item in propname.Split('\\'))
@@ -116,11 +116,11 @@ namespace ModbusIntegratorTuning
                                             else
                                                 tree = nodes[0].Nodes;
                                         }
-                                        tvNodes.Sort();
+                                        treeNodes.Sort();
                                     }
                                     finally
                                     {
-                                        tvNodes.EndUpdate();
+                                        treeNodes.EndUpdate();
                                     }
                                 }
                                 break;
@@ -139,50 +139,51 @@ namespace ModbusIntegratorTuning
             locEvClient.Disconnect();
         }
 
-        private void addItemToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (tvNodes.Nodes.Count == 0)
-                AddNodeToTree(tvNodes.Nodes, "default");
-            else
-            {
-                var parentNode = tvNodes.SelectedNode;
-                if (parentNode == null)
-                    AddNodeToTree(tvNodes.Nodes, $"socket {tvNodes.Nodes.Count}");
-                else
-                {
-                    switch (parentNode.Level)
-                    {
-                        case 0:
-                            AddNodeToTree(parentNode.Nodes, $"node {parentNode.Nodes.Count + 1}");
-                            break;
-                        case 1:
-                            AddNodeToTree(parentNode.Nodes, $"item {parentNode.Nodes.Count + 1}");
-                            break;
-                    }
-                }
-            }
-        }
+        //private void addItemToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    if (tvNodes.Nodes.Count == 0)
+        //        AddNodeToTree(tvNodes.Nodes, "default");
+        //    else
+        //    {
+        //        var parentNode = tvNodes.SelectedNode;
+        //        if (parentNode == null)
+        //            AddNodeToTree(tvNodes.Nodes, $"socket {tvNodes.Nodes.Count}");
+        //        else
+        //        {
+        //            switch (parentNode.Level)
+        //            {
+        //                case 0:
+        //                    AddNodeToTree(parentNode.Nodes, $"node {parentNode.Nodes.Count + 1}");
+        //                    break;
+        //                case 1:
+        //                    AddNodeToTree(parentNode.Nodes, $"item {parentNode.Nodes.Count + 1}");
+        //                    break;
+        //            }
+        //        }
+        //    }
+        //}
 
-        private void AddNodeToTree(TreeNodeCollection nodes, string name)
-        {
-            TreeNode node = new TreeNode(name) { Name = name };
-            nodes.Add(node);
-            tvNodes.SelectedNode = node;
-            locEvClient.UpdateProperty("config", "add", node.FullPath, node.FullPath);
-        }
+        //private void AddNodeToTree(TreeNodeCollection nodes, string name)
+        //{
+        //    TreeNode node = new TreeNode(name) { Name = name };
+        //    nodes.Add(node);
+        //    tvNodes.SelectedNode = node;
+        //    locEvClient.UpdateProperty("config", "add", node.FullPath, node.FullPath);
+        //}
 
-        private void treeView1_MouseDown(object sender, MouseEventArgs e)
+        private void treeView_MouseDown(object sender, MouseEventArgs e)
         {
-            tvNodes.SelectedNode = tvNodes.GetNodeAt(e.Location);
-            tsslStatus.Text = $"{tvNodes.SelectedNode?.FullPath}";
-            if (tvNodes.SelectedNode == null)
+            var treeNodes = (TreeView)sender;
+            treeNodes.SelectedNode = treeNodes.GetNodeAt(e.Location);
+            tsslStatus.Text = $"{treeNodes.SelectedNode?.FullPath}";
+            if (treeNodes.SelectedNode == null)
             {
                 lvProps.Items.Clear();
                 lvProps.Columns.Clear();
             }
         }
 
-        private void tvNodes_AfterSelect(object sender, TreeViewEventArgs e)
+        private void treeNodes_AfterSelect(object sender, TreeViewEventArgs e)
         {
             var akey = $"{e.Node?.FullPath}";
             lvProps.BeginUpdate();

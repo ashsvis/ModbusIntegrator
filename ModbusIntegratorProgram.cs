@@ -34,6 +34,8 @@ namespace ModbusIntegrator
             locEvClient = new EventClient();
             locEvClient.Connect(new[] { "config", "fetching", "archives" }, PropertyUpdate, ShowError, UpdateLocalConnectionStatus);
 
+
+
             // если запускает пользователь сам
             if (Environment.UserInteractive)
             {
@@ -41,7 +43,7 @@ namespace ModbusIntegrator
                 s.Start();
                 try
                 {
-                    Console.WriteLine($"{mif.ReadString("root", "descriptor", "Unknown program")}, ver {mif.ReadString("root", "version", "unknown")}");
+                    Console.WriteLine($"{mif.ReadString("integrator", "descriptor", "Unknown program")}, ver {mif.ReadString("integrator", "version", "unknown")}");
                     Console.WriteLine();
                     Console.WriteLine("Type any key to exit");
                     Console.ReadKey();
