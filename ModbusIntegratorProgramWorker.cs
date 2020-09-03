@@ -24,7 +24,7 @@ namespace ModbusIntegrator
 
         static void Worker_DoWork(object sender, DoWorkEventArgs e)
         {
-            //var worker = (BackgroundWorker)sender;
+            var worker = (BackgroundWorker)sender;
             //var lastsecond = DateTime.Now.Second;
             //var lastminute = -1;
             //var lasthour = -1;
@@ -60,7 +60,7 @@ namespace ModbusIntegrator
                     Server = { SendTimeout = socketTimeOut, ReceiveTimeout = socketTimeOut }
                 };
                 Thread.Sleep(100);
-                Say($"\nСокет localhost:{tt.Port} прослушивается...");
+                Say(worker, $"\nСокет localhost:{tt.Port} прослушивается...");
                 do
                 {
                     Thread.Sleep(1);
@@ -76,7 +76,7 @@ namespace ModbusIntegrator
                             if (!worker.CancellationPending) continue;
                             listener.Stop();
                             e.Cancel = true;
-                            Say($"\nСокет TCP({tt.Port}) - остановка прослушивания.");
+                            Say(worker, $"\nСокет TCP({tt.Port}) - остановка прослушивания.");
                             return;
                         }
                         var clientData = listener.AcceptTcpClient();
@@ -215,25 +215,25 @@ namespace ModbusIntegrator
                             }
                             catch (Exception ex)
                             {
-                                if (!worker.CancellationPending) Say(ex.Message);
+                                if (!worker.CancellationPending) Say(worker, ex.Message);
                             }
                         });
                     }
                     catch (SocketException exception)
                     {
                         if (!worker.CancellationPending)
-                            Say($"Ошибка приёма: {exception.Message}");
+                            Say(worker, $"Ошибка приёма: {exception.Message}");
                         break;
                     }
                 } while (!worker.CancellationPending);
                 listener.Stop();
-                Say($"\nСокет TCP({tt.Port}) - остановка прослушивания.");
+                Say(worker, $"\nСокет TCP({tt.Port}) - остановка прослушивания.");
             }
 
             #endregion работа с Tcp портом
         }
 
-        private static void Say(string message)
+        private static void Say(BackgroundWorker worker, string message)
         {
             worker.ReportProgress(-1, message);
         }

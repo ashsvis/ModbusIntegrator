@@ -37,9 +37,8 @@ namespace ModbusIntegrator
         internal static bool SetPropValue(string category, string name, string prop, string value)
         {
             var key = GetCashpropsKey(category, name, prop);
-            DataItem item;
             // одинаковые значения игнорируем
-            if (Cashprops.TryGetValue(key, out item) && item.Value.Equals(value)) return false;
+            if (Cashprops.TryGetValue(key, out DataItem item) && item.Value.Equals(value)) return false;
             // создаем новый объект хранения
             item = new DataItem
             {

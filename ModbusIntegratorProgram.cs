@@ -1,6 +1,7 @@
 ﻿using ModbusIntegratorEventClient;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.ServiceProcess;
@@ -14,7 +15,7 @@ namespace ModbusIntegrator
 
         private static MemIniFile mif;
 
-        static BackgroundWorker worker;
+        static List<BackgroundWorker> workers = new List<BackgroundWorker>();
 
         static void Main(string[] args)
         {
@@ -23,7 +24,8 @@ namespace ModbusIntegrator
             mif = new MemIniFile(configName);
 
             // запуск фонового процесса для прослушивания сокета Modbus Tcp 502
-            worker = new BackgroundWorker { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
+            var worker = new BackgroundWorker { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
+            workers.Add(worker);
             worker.DoWork += Worker_DoWork;
             worker.RunWorkerCompleted += Worker_RunWorkerCompleted;
             worker.ProgressChanged += Worker_ProgressChanged;
@@ -34,7 +36,7 @@ namespace ModbusIntegrator
             locEvClient = new EventClient();
             locEvClient.Connect(new[] { "config", "fetching", "archives" }, PropertyUpdate, ShowError, UpdateLocalConnectionStatus);
 
-
+            LoadAndRunConfiguration();
 
             // если запускает пользователь сам
             if (Environment.UserInteractive)

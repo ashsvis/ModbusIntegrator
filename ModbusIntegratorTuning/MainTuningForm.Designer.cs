@@ -98,6 +98,7 @@
             this.tvNodes.Size = new System.Drawing.Size(212, 164);
             this.tvNodes.TabIndex = 3;
             this.tvNodes.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeNodes_AfterSelect);
+            this.tvNodes.Leave += new System.EventHandler(this.treeNodes_Leave);
             this.tvNodes.MouseDown += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseDown);
             // 
             // tableLayoutPanel1
@@ -255,6 +256,7 @@
             this.tvSources.Size = new System.Drawing.Size(212, 167);
             this.tvSources.TabIndex = 1;
             this.tvSources.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeNodes_AfterSelect);
+            this.tvSources.Leave += new System.EventHandler(this.treeNodes_Leave);
             this.tvSources.MouseDown += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseDown);
             // 
             // tableLayoutPanel3

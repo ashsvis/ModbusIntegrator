@@ -318,6 +318,12 @@ namespace ModbusIntegratorTuning
         {
             locEvClient.Reconnect();
         }
+
+        private void treeNodes_Leave(object sender, EventArgs e)
+        {
+            var treeNodes = (TreeView)sender;
+            treeNodes.SelectedNode = null;
+        }
     }
 
     // Implements the manual sorting of items by columns.

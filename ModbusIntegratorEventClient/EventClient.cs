@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.ServiceModel;
 using System.Threading;
 using System.Timers;

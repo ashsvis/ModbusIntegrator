@@ -52,6 +52,8 @@
     <Compile Include="ModbusIntegratorEventService.cs" />
     <Compile Include="ModbusIntegratorProgram.cs" />
     <Compile Include="ModbusIntegratorProgramLocalClient.cs" />
+    <Compile Include="ModbusIntegratorProgramModbus.cs" />
+    <Compile Include="ModbusIntegratorProgramSources.cs" />
     <Compile Include="ModbusIntegratorProgramWorker.cs" />
     <Compile Include="ModbusItem.cs" />
     <Compile Include="ModbusNode.cs" />
