@@ -33,6 +33,7 @@
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
+            this.scServerConnected = new StatusControl.StatusControl();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.tsslStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
@@ -60,7 +61,6 @@
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.serviceController1 = new System.ServiceProcess.ServiceController();
-            this.scServerConnected = new StatusControl.StatusControl();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -123,6 +123,18 @@
             this.label1.Size = new System.Drawing.Size(178, 15);
             this.label1.TabIndex = 3;
             this.label1.Text = "Статус подключения к службе:";
+            // 
+            // scServerConnected
+            // 
+            this.scServerConnected.LampColorNone = System.Drawing.SystemColors.ButtonFace;
+            this.scServerConnected.LampColorOff = System.Drawing.Color.Red;
+            this.scServerConnected.LampColorOn = System.Drawing.Color.Lime;
+            this.scServerConnected.Location = new System.Drawing.Point(186, 3);
+            this.scServerConnected.Name = "scServerConnected";
+            this.scServerConnected.Size = new System.Drawing.Size(15, 15);
+            this.scServerConnected.State = null;
+            this.scServerConnected.TabIndex = 2;
+            this.scServerConnected.Text = "statusControl1";
             // 
             // statusStrip1
             // 
@@ -191,18 +203,18 @@
             this.lvProps.MultiSelect = false;
             this.lvProps.Name = "lvProps";
             this.lvProps.Size = new System.Drawing.Size(402, 348);
-            this.lvProps.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this.lvProps.TabIndex = 0;
             this.lvProps.UseCompatibleStateImageBehavior = false;
             this.lvProps.View = System.Windows.Forms.View.Details;
+            this.lvProps.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.lvProps_ColumnClick);
             this.lvProps.SelectedIndexChanged += new System.EventHandler(this.lvProps_SelectedIndexChanged);
             // 
             // tabPage2
             // 
-            this.tabPage2.Location = new System.Drawing.Point(4, 24);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(408, 354);
+            this.tabPage2.Size = new System.Drawing.Size(408, 356);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Fetching values";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -356,18 +368,6 @@
             // serviceController1
             // 
             this.serviceController1.ServiceName = "ModbusIntegrationServer";
-            // 
-            // scServerConnected
-            // 
-            this.scServerConnected.LampColorNone = System.Drawing.SystemColors.ButtonFace;
-            this.scServerConnected.LampColorOff = System.Drawing.Color.Red;
-            this.scServerConnected.LampColorOn = System.Drawing.Color.Lime;
-            this.scServerConnected.Location = new System.Drawing.Point(186, 3);
-            this.scServerConnected.Name = "scServerConnected";
-            this.scServerConnected.Size = new System.Drawing.Size(15, 15);
-            this.scServerConnected.State = null;
-            this.scServerConnected.TabIndex = 2;
-            this.scServerConnected.Text = "statusControl1";
             // 
             // MainTuningForm
             // 

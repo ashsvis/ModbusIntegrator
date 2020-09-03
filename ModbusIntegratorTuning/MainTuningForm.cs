@@ -1,5 +1,6 @@
 ﻿using ModbusIntegratorEventClient;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceProcess;
@@ -189,48 +190,60 @@ namespace ModbusIntegratorTuning
         private void tvNodes_AfterSelect(object sender, TreeViewEventArgs e)
         {
             var akey = $"{e.Node?.FullPath}";
-            lvProps.Items.Clear();
-            lvProps.Columns.Clear();
-            lvProps.Columns.Add(new ColumnHeader() { Text = "Property Name", Width = 100 });
-            lvProps.Columns.Add(new ColumnHeader() { Text = "Property Value", Width = 100 });
-            foreach (var key in dictionary.Keys)
+            lvProps.BeginUpdate();
+            try
             {
-                if (key.StartsWith(akey))
+                lvProps.Items.Clear();
+                lvProps.Columns.Clear();
+                lvProps.Columns.Add(new ColumnHeader() { Text = "Property Name", Width = 100 });
+                lvProps.Columns.Add(new ColumnHeader() { Text = "Property Value", Width = 100 });
+                var items = new List<ListViewItem>();
+                foreach (var key in dictionary.Keys)
                 {
-                    var prop = $"{key.Substring(akey.Length + 1)}";
-                    if (prop.IndexOf('\\') < 0)
+                    if (key.StartsWith(akey))
                     {
-                        var vals = dictionary[key].Split(';');
-                        if (prop.ToLower() == "#columns")
+                        var prop = $"{key.Substring(akey.Length + 1)}";
+                        if (prop.IndexOf('\\') < 0)
                         {
-                            lvProps.Columns.Clear();
-                            lvProps.Columns.Add(new ColumnHeader() { Text = "Property Name", Width = 100 });
+                            var vals = dictionary[key].Split(';');
+                            if (prop.ToLower() == "#columns")
+                            {
+                                lvProps.Columns.Clear();
+                                lvProps.Columns.Add(new ColumnHeader() { Text = "Property Name", Width = 100 });
+                                foreach (var value in vals)
+                                    lvProps.Columns.Add(new ColumnHeader() { Text = value, Width = 70 });
+                            }
+                            if (prop.StartsWith("#")) continue;
+                            var lvi = new ListViewItem(prop) { Tag = key };
                             foreach (var value in vals)
-                                lvProps.Columns.Add(new ColumnHeader() { Text = value, Width = 70 });
+                                lvi.SubItems.Add(value);
+                            items.Add(lvi);
                         }
-                        if (prop.StartsWith("#")) continue;
-                        var lvi = new ListViewItem(prop) { Tag = key };
-                        foreach (var value in vals)
-                            lvi.SubItems.Add(value);
-                        lvProps.Items.Add(lvi);
                     }
+                }
+                foreach (var item in items.OrderBy(x => x.Text))
+                    lvProps.Items.Add(item);
+                // настройка выравнивания целочисленных стобцов к правой стороне
+                foreach (var column in lvProps.Columns.Cast<ColumnHeader>().Skip(1))
+                {
+                    var allIsInteger = true;
+                    foreach (var lvi in lvProps.Items.Cast<ListViewItem>())
+                    {
+                        if (column.Index >= lvi.SubItems.Count) break;
+                        var value = lvi.SubItems[column.Index].Text;
+                        if (!int.TryParse(value, out int ival))
+                        {
+                            allIsInteger = false;
+                            break;
+                        }
+                    }
+                    if (allIsInteger)
+                        column.TextAlign = HorizontalAlignment.Right;
                 }
             }
-            foreach (var column in lvProps.Columns.Cast<ColumnHeader>().Skip(1))
+            finally
             {
-                var allIsInteger = true;
-                foreach (var lvi in lvProps.Items.Cast<ListViewItem>())
-                {
-                    if (column.Index >= lvi.SubItems.Count) break;
-                    var value = lvi.SubItems[column.Index].Text;
-                    if (!int.TryParse(value, out int ival))
-                    {
-                        allIsInteger = false;
-                        break;
-                    }
-                }
-                if (allIsInteger)
-                    column.TextAlign = HorizontalAlignment.Right;
+                lvProps.EndUpdate();
             }
         }
 
@@ -283,5 +296,89 @@ namespace ModbusIntegratorTuning
             var lvi = lvProps.SelectedItems[0];
             tsslStatus.Text = $"{lvi.Tag}";
         }
+
+        private int lastColumn = -1;
+
+        private void lvProps_ColumnClick(object sender, ColumnClickEventArgs e)
+        {
+            var lv = (ListView)sender;
+            if (lastColumn != e.Column)
+            {
+                lv.ListViewItemSorter = new ListViewItemComparer(e.Column);
+                lastColumn = e.Column;
+            }
+            else
+            {
+                if (lv.ListViewItemSorter is ListViewItemComparer)
+                    lv.ListViewItemSorter = new ListViewItemReverseComparer(e.Column);
+                else
+                    lv.ListViewItemSorter = new ListViewItemComparer(e.Column);
+            }
+            if (lv.FocusedItem != null)
+                lv.FocusedItem.EnsureVisible();
+        }
     }
+
+    // Implements the manual sorting of items by columns.
+    public class ListViewItemComparer : IComparer
+    {
+        private readonly int col;
+
+        public ListViewItemComparer()
+        {
+            col = 0;
+        }
+
+        public ListViewItemComparer(int column)
+        {
+            col = column;
+        }
+
+        public int Compare(object x, object y)
+        {
+            ListViewItem itemX = (ListViewItem)x;
+            ListViewItem itemY = (ListViewItem)y;
+            if (col < itemX.SubItems.Count && col < itemY.SubItems.Count)
+            {
+                if (int.TryParse(itemX.SubItems[col].Text, out int ix) && int.TryParse(itemY.SubItems[col].Text, out int iy))
+                    return ix > iy ? 1 : ix < iy ? -1 : 0;
+                else
+                    return string.Compare(itemX.SubItems[col].Text, itemY.SubItems[col].Text);
+            }
+            else
+                return 0;
+        }
+    }
+
+    // Implements the manual reverse sorting of items by columns.
+    public class ListViewItemReverseComparer : IComparer
+    {
+        private readonly int col;
+
+        public ListViewItemReverseComparer()
+        {
+            col = 0;
+        }
+
+        public ListViewItemReverseComparer(int column)
+        {
+            col = column;
+        }
+
+        public int Compare(object x, object y)
+        {
+            ListViewItem itemX = (ListViewItem)x;
+            ListViewItem itemY = (ListViewItem)y;
+            if (col < itemX.SubItems.Count && col < itemY.SubItems.Count)
+            {
+                if (int.TryParse(itemX.SubItems[col].Text, out int ix) && int.TryParse(itemY.SubItems[col].Text, out int iy))
+                    return ix < iy ? 1 : ix > iy ? -1 : 0;
+                else
+                    return string.Compare(itemY.SubItems[col].Text, itemX.SubItems[col].Text);
+            }
+            else
+                return 0;
+        }
+    }
+
 }
