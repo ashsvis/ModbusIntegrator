@@ -1,6 +1,7 @@
 ﻿using ModbusIntegratorEventClient;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ServiceProcess;
 using System.Threading;
 using System.Windows.Forms;
@@ -33,7 +34,7 @@ namespace ModbusIntegratorTuning
                 {
                     case ClientConnectionStatus.Opened:
                         scServerConnected.State = true;
-                        tsslStatus.Text = "Подключение актуально.";
+                        tsslStatus.Text = "Подключение к службе установлено.";
                         break;
                     case ClientConnectionStatus.Opening:
                         scServerConnected.State = null;
@@ -44,8 +45,8 @@ namespace ModbusIntegratorTuning
                 }
                 if (status == ClientConnectionStatus.Opening)
                 {
-                    //listBox1.Items.Clear();
-                    //listBox2.Items.Clear();
+                    tsslStatus.Text = "Подключение к службе...";
+                    dictionary.Clear();
                 }
             });
             if (InvokeRequired)
@@ -177,13 +178,21 @@ namespace ModbusIntegratorTuning
         private void treeView1_MouseDown(object sender, MouseEventArgs e)
         {
             tvNodes.SelectedNode = tvNodes.GetNodeAt(e.Location);
-            if (tvNodes.SelectedNode == null) tsslStatus.Text = "";
+            tsslStatus.Text = $"{tvNodes.SelectedNode?.FullPath}";
+            if (tvNodes.SelectedNode == null)
+            {
+                lvProps.Items.Clear();
+                lvProps.Columns.Clear();
+            }
         }
 
         private void tvNodes_AfterSelect(object sender, TreeViewEventArgs e)
         {
             var akey = $"{e.Node?.FullPath}";
             lvProps.Items.Clear();
+            lvProps.Columns.Clear();
+            lvProps.Columns.Add(new ColumnHeader() { Text = "Property Name", Width = 100 });
+            lvProps.Columns.Add(new ColumnHeader() { Text = "Property Value", Width = 100 });
             foreach (var key in dictionary.Keys)
             {
                 if (key.StartsWith(akey))
@@ -191,9 +200,37 @@ namespace ModbusIntegratorTuning
                     var prop = $"{key.Substring(akey.Length + 1)}";
                     if (prop.IndexOf('\\') < 0)
                     {
-                        lvProps.Items.Add(prop).SubItems.Add(dictionary[key]);
+                        var vals = dictionary[key].Split(';');
+                        if (prop.ToLower() == "#columns")
+                        {
+                            lvProps.Columns.Clear();
+                            lvProps.Columns.Add(new ColumnHeader() { Text = "Property Name", Width = 100 });
+                            foreach (var value in vals)
+                                lvProps.Columns.Add(new ColumnHeader() { Text = value, Width = 70 });
+                        }
+                        if (prop.StartsWith("#")) continue;
+                        var lvi = new ListViewItem(prop) { Tag = key };
+                        foreach (var value in vals)
+                            lvi.SubItems.Add(value);
+                        lvProps.Items.Add(lvi);
                     }
                 }
+            }
+            foreach (var column in lvProps.Columns.Cast<ColumnHeader>().Skip(1))
+            {
+                var allIsInteger = true;
+                foreach (var lvi in lvProps.Items.Cast<ListViewItem>())
+                {
+                    if (column.Index >= lvi.SubItems.Count) break;
+                    var value = lvi.SubItems[column.Index].Text;
+                    if (!int.TryParse(value, out int ival))
+                    {
+                        allIsInteger = false;
+                        break;
+                    }
+                }
+                if (allIsInteger)
+                    column.TextAlign = HorizontalAlignment.Right;
             }
         }
 
@@ -238,6 +275,13 @@ namespace ModbusIntegratorTuning
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Close();
+        }
+
+        private void lvProps_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (lvProps.SelectedItems.Count == 0) return;
+            var lvi = lvProps.SelectedItems[0];
+            tsslStatus.Text = $"{lvi.Tag}";
         }
     }
 }
