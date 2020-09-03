@@ -45,7 +45,7 @@ namespace ModbusIntegratorEventClient
         {
             if (_showError != null)
             {
-                var mess = "Попытка подключиться к серверу событий после сбоя связи.";
+                var mess = "Попытка подключиться к серверу событий после сбоя связи...";
                 _showError(mess);
             }
             Reconnect();
@@ -179,7 +179,7 @@ namespace ModbusIntegratorEventClient
             }
             catch (EndpointNotFoundException ex)
             {
-                SendToErrorsLog("Ошибка подключения: " + ex.Message);
+                SendToErrorsLog("Ошибка подключения к серверу событий: " + ex.Message);
                 return false;
             }
             catch (Exception ex)

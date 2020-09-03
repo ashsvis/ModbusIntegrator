@@ -34,7 +34,7 @@ namespace ModbusIntegrator
         /// <param name="name">имя объекта</param>
         /// <param name="prop">имя свойства</param>
         /// <param name="value">значение</param>
-        private static bool SetPropValue(string category, string name, string prop, string value)
+        internal static bool SetPropValue(string category, string name, string prop, string value)
         {
             var key = GetCashpropsKey(category, name, prop);
             DataItem item;

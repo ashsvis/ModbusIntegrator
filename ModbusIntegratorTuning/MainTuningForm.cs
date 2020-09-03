@@ -22,9 +22,7 @@ namespace ModbusIntegratorTuning
 
         private void MainClientForm_Load(object sender, EventArgs e)
         {
-            Thread.Sleep(1000);
-            locEvClient.Connect(new[] {  "config", "fetching", "archives" }, PropertyUpdate, ShowError, UpdateLocalConnectionStatus);
-
+            locEvClient.Connect(new[] { "config", "fetching", "archives" }, PropertyUpdate, ShowError, UpdateLocalConnectionStatus);
         }
 
         private void UpdateLocalConnectionStatus(Guid clientId, ClientConnectionStatus status)
@@ -35,19 +33,16 @@ namespace ModbusIntegratorTuning
                 {
                     case ClientConnectionStatus.Opened:
                         scServerConnected.State = true;
-                        tsslStatus.Text = "Подключение к службе установлено.";
+                        tsslStatus.Text = "Подключение к серверу событий установлено.";
                         break;
                     case ClientConnectionStatus.Opening:
                         scServerConnected.State = null;
+                        tsslStatus.Text = "Подключение к серверу событий...";
+                        dictionary.Clear();
                         break;
                     default:
                         scServerConnected.State = false;
                         break;
-                }
-                if (status == ClientConnectionStatus.Opening)
-                {
-                    tsslStatus.Text = "Подключение к службе...";
-                    dictionary.Clear();
                 }
             });
             if (InvokeRequired)
@@ -316,6 +311,11 @@ namespace ModbusIntegratorTuning
             }
             if (lv.FocusedItem != null)
                 lv.FocusedItem.EnsureVisible();
+        }
+
+        private void btnRefresh_Click(object sender, EventArgs e)
+        {
+            locEvClient.Reconnect();
         }
     }
 

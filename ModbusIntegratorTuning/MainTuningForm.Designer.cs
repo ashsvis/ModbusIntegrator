@@ -32,6 +32,7 @@
             this.tvNodes = new System.Windows.Forms.TreeView();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.btnRefresh = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.scServerConnected = new StatusControl.StatusControl();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
@@ -80,7 +81,7 @@
             this.tvNodes.HideSelection = false;
             this.tvNodes.Location = new System.Drawing.Point(0, 0);
             this.tvNodes.Name = "tvNodes";
-            this.tvNodes.Size = new System.Drawing.Size(216, 382);
+            this.tvNodes.Size = new System.Drawing.Size(216, 377);
             this.tvNodes.TabIndex = 3;
             this.tvNodes.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tvNodes_AfterSelect);
             this.tvNodes.MouseDown += new System.Windows.Forms.MouseEventHandler(this.treeView1_MouseDown);
@@ -107,29 +108,40 @@
             // panel1
             // 
             this.panel1.AutoSize = true;
+            this.panel1.Controls.Add(this.btnRefresh);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.scServerConnected);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(3, 27);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(636, 21);
+            this.panel1.Size = new System.Drawing.Size(636, 26);
             this.panel1.TabIndex = 0;
+            // 
+            // btnRefresh
+            // 
+            this.btnRefresh.Location = new System.Drawing.Point(136, 0);
+            this.btnRefresh.Name = "btnRefresh";
+            this.btnRefresh.Size = new System.Drawing.Size(75, 23);
+            this.btnRefresh.TabIndex = 4;
+            this.btnRefresh.Text = "Reconnect";
+            this.btnRefresh.UseVisualStyleBackColor = true;
+            this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(2, 2);
+            this.label1.Location = new System.Drawing.Point(2, 4);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(178, 15);
+            this.label1.Size = new System.Drawing.Size(107, 15);
             this.label1.TabIndex = 3;
-            this.label1.Text = "Статус подключения к службе:";
+            this.label1.Text = "Event server status:";
             // 
             // scServerConnected
             // 
             this.scServerConnected.LampColorNone = System.Drawing.SystemColors.ButtonFace;
             this.scServerConnected.LampColorOff = System.Drawing.Color.Red;
             this.scServerConnected.LampColorOn = System.Drawing.Color.Lime;
-            this.scServerConnected.Location = new System.Drawing.Point(186, 3);
+            this.scServerConnected.Location = new System.Drawing.Point(115, 4);
             this.scServerConnected.Name = "scServerConnected";
             this.scServerConnected.Size = new System.Drawing.Size(15, 15);
             this.scServerConnected.State = null;
@@ -158,7 +170,7 @@
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
-            this.splitContainer1.Location = new System.Drawing.Point(3, 54);
+            this.splitContainer1.Location = new System.Drawing.Point(3, 59);
             this.splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
@@ -168,7 +180,7 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tabControl1);
-            this.splitContainer1.Size = new System.Drawing.Size(636, 382);
+            this.splitContainer1.Size = new System.Drawing.Size(636, 377);
             this.splitContainer1.SplitterDistance = 216;
             this.splitContainer1.TabIndex = 1;
             // 
@@ -180,7 +192,7 @@
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(416, 382);
+            this.tabControl1.Size = new System.Drawing.Size(416, 377);
             this.tabControl1.TabIndex = 1;
             // 
             // tabPage1
@@ -189,7 +201,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 24);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(408, 354);
+            this.tabPage1.Size = new System.Drawing.Size(408, 349);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Properties";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -202,7 +214,7 @@
             this.lvProps.Location = new System.Drawing.Point(3, 3);
             this.lvProps.MultiSelect = false;
             this.lvProps.Name = "lvProps";
-            this.lvProps.Size = new System.Drawing.Size(402, 348);
+            this.lvProps.Size = new System.Drawing.Size(402, 343);
             this.lvProps.TabIndex = 0;
             this.lvProps.UseCompatibleStateImageBehavior = false;
             this.lvProps.View = System.Windows.Forms.View.Details;
@@ -214,7 +226,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(408, 356);
+            this.tabPage2.Size = new System.Drawing.Size(408, 351);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Fetching values";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -433,6 +445,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem startToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem stopToolStripMenuItem;
+        private System.Windows.Forms.Button btnRefresh;
     }
 }
 

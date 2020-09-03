@@ -10,7 +10,7 @@ namespace ModbusIntegrator
      */
     public sealed class WcfEventService
     {
-        private readonly TimeSpan _timeout = new TimeSpan(0, 1, 30);
+        private readonly TimeSpan _timeout = new TimeSpan(0, 5, 0);
         private static WcfEventService _wcfEventService;
         private readonly ServiceHost _svcHost;
 
