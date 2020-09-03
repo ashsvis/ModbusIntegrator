@@ -1,4 +1,8 @@
-﻿namespace ModbusIntegrator
+﻿using System;
+using System.ComponentModel;
+using System.Net;
+
+namespace ModbusIntegrator
 {
     partial class ModbusIntegratorProgram
     {
@@ -21,23 +25,38 @@
                         itemName = $"{socketName}\\{mif.ReadString(section, nodeName, nodeName)}";
                         ModbusIntegratorEventService.SetPropValue("config", "add", itemName, nodeName);
                         // загрузка общих параметров настройки узла
-                        var actived = false;
                         foreach (var key in mif.ReadSectionKeys(nodeName))
                         {
                             var pointname = $"{socketName}\\{nodeName}";
                             var propname = key;
                             var value = mif.ReadString(nodeName, key, "");
                             ModbusIntegratorEventService.SetPropValue("fetching", pointname, propname, value);
-                            // проверка настройки включения узла
-                            if (propname.ToLower() == "active" && value.ToLower() == "true")
+                        }
+                        // проверка настройки включения узла
+                        var actived = mif.ReadString(nodeName, "Active", "false").ToLower() == "true";
+                        var modbusTcp = actived && mif.ReadString(nodeName, "LinkProtokol", "false").ToLower() == "modbus tcp";
+                        if (modbusTcp &&
+                           IPAddress.TryParse(mif.ReadString(nodeName, "IpAddress", "127.0.0.1"), out IPAddress ipAddr) &&
+                           int.TryParse(mif.ReadString(nodeName, "IpPort", "502"), out int ipPort) &&
+                           int.TryParse(mif.ReadString(nodeName, "SendTimeout", "5000"), out int sendTimeout) &&
+                           int.TryParse(mif.ReadString(nodeName, "ReceiveTimeout", "5000"), out int receiveTimeout) &&
+                           int.TryParse(mif.ReadString(nodeName, "ModbusNode", "247"), out int modbusNode))
+                        {
+                            // запуск потока для обработки устройства по протоколу Modbus Tcp
+                            var worker = new BackgroundWorker { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
+                            workers.Add(worker);
+                            worker.DoWork += ModbusWorker_DoWork;
+                            worker.RunWorkerCompleted += ModbusWorker_RunWorkerCompleted;
+                            worker.ProgressChanged += ModbusWorker_ProgressChanged;
+                            var tcptuning = new TcpTuning
                             {
-                                actived = true;
-                            }
-                            else if (actived && propname.ToLower() == "linkprotokol" && value.ToLower() == "modbus tcp")
-                            {
-                                //запуск потока для обработки устройства Modbus Tcp
-
-                            }
+                                Address = ipAddr,
+                                Port = ipPort,
+                                SendTimeout = sendTimeout,
+                                ReceiveTimeout = receiveTimeout,
+                                Node = modbusNode
+                            };
+                            worker.RunWorkerAsync(tcptuning);
                         }
                         var fetchParamsSection = $"{nodeName}_FetchParams";
                         if (mif.SectionExists(fetchParamsSection))
