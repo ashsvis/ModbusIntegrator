@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 
 namespace ModbusIntegrator
@@ -79,7 +77,7 @@ namespace ModbusIntegrator
                                             {
                                                 item.LastValue = result.Value;
 
-                                                worker.ReportProgress(answer.Length, $"{item.ParamName}\t{result}");
+                                                //worker.ReportProgress(answer.Length, $"{item.ParamName}\t{result}");
 
                                                 var pointname = item.ParamName;
                                                 var propname = "PV";
@@ -102,7 +100,7 @@ namespace ModbusIntegrator
                 if (lastminute == dt.Minute) continue;
                 lastminute = dt.Minute;
                 // прошла минута
-                worker.ReportProgress(lastminute, $"{dt.Minute} минута");
+                //worker.ReportProgress(lastminute, $"{dt.Minute} минута");
                 try
                 {
                     using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
@@ -202,12 +200,12 @@ namespace ModbusIntegrator
                     if (answer.Length == 7)
                     {
                         var data = BitConverter.ToUInt32(Swap(answer, 3, typeSwap), 0);
-                        if (unitValue == "UTC")
-                        {
-                            var dateTime = ConvertFromUnixTimestamp(data).ToLocalTime();
-                            value = dateTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.GetCultureInfo("en-US"));
-                        }
-                        else
+                        //if (unitValue == "UTC")
+                        //{
+                        //    var dateTime = ConvertFromUnixTimestamp(data).ToLocalTime();
+                        //    value = dateTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.GetCultureInfo("en-US"));
+                        //}
+                        //else
                             value = data.ToString(CultureInfo.GetCultureInfo("en-US"));
                     }
                     break;
