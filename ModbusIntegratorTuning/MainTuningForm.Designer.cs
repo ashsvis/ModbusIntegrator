@@ -311,6 +311,7 @@
             // 
             // lvProps
             // 
+            this.lvProps.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lvProps.FullRowSelect = true;
             this.lvProps.HideSelection = false;
             this.lvProps.Location = new System.Drawing.Point(3, 3);
@@ -326,16 +327,17 @@
             // tabPage2
             // 
             this.tabPage2.Controls.Add(this.lvValues);
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Location = new System.Drawing.Point(4, 24);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(408, 351);
+            this.tabPage2.Size = new System.Drawing.Size(408, 349);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Fetching values";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // lvValues
             // 
+            this.lvValues.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lvValues.FullRowSelect = true;
             this.lvValues.HideSelection = false;
             this.lvValues.Location = new System.Drawing.Point(3, 3);
