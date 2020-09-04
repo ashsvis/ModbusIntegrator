@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -78,17 +79,12 @@ namespace ModbusIntegrator
                                             {
                                                 item.LastValue = result.Value;
 
-                                                //worker.ReportProgress(answer.Length, $"{item.ParamName}\t{result}");
+                                                worker.ReportProgress(answer.Length, $"{item.ParamName}\t{result}");
 
-                                                //var columns = new Dictionary<string, object> {
-                                                //            { "TagName", item.ParamName },
-                                                //            { "Value", result.Value ?? "" },
-                                                //            { "Unit", result.EU ?? "" },
-                                                //        };
                                                 var pointname = item.ParamName;
                                                 var propname = "PV";
                                                 var value = result.Value;
-                                                locEvClient.UpdateProperty("Fetching", pointname, propname, value);
+                                                locEvClient.UpdateProperty("fetching", $"{item.Prefix}\\FetchParams\\{pointname}", propname, value);
                                             }
                                         }
                                     }
@@ -199,24 +195,7 @@ namespace ModbusIntegrator
                     if (answer.Length == 5)
                     {
                         var data = BitConverter.ToUInt16(Swap(answer, 3, typeSwap), 0);
-                        if (unitValue == "bits")
-                        {
-                            var sb = new StringBuilder();
-                            for (var i = 0; i < 16; i++)
-                            {
-                                var bc = data & 0x01;
-                                if (bc > 0)
-                                    sb.Insert(0, "1");
-                                else
-                                    sb.Insert(0, "0");
-                                data = (UInt16)(data >> 1);
-                                if (i % 4 == 3)
-                                    sb.Insert(0, " ");
-                            }
-                            value = sb.ToString().Trim();
-                        }
-                        else
-                            value = data.ToString(CultureInfo.GetCultureInfo("en-US"));
+                        value = data.ToString(CultureInfo.GetCultureInfo("en-US"));
                     }
                     break;
                 case "uint32":
@@ -385,6 +364,7 @@ namespace ModbusIntegrator
 
     public class AskParamData
     {
+        public string Prefix { get; set; }
         public byte Node { get; set; }         // байт адреса прибора
         public byte Func { get; set; }         // номер функции Modbus
         public int RegAddr { get; set; }       // номер регистра (начиная с 1)
@@ -398,6 +378,7 @@ namespace ModbusIntegrator
 
     public class AnswerData
     {
+        public string Prefix { get; set; }
         public byte Node { get; set; }         // байт адреса прибора
         public byte Func { get; set; }         // номер функции Modbus
         public int RegAddr { get; set; }       // номер регистра (начиная с 1)

@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.ServiceProcess;
 using System.Windows.Forms;
@@ -11,7 +12,8 @@ namespace ModbusIntegratorTuning
     public partial class MainTuningForm : Form
     {
         private readonly EventClient locEvClient;
-        private readonly Dictionary<string, string> dictionary = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> config = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> fetching = new Dictionary<string, string>();
 
         public MainTuningForm()
         {
@@ -37,7 +39,8 @@ namespace ModbusIntegratorTuning
                     case ClientConnectionStatus.Opening:
                         scServerConnected.State = null;
                         tsslStatus.Text = "Подключение к серверу событий...";
-                        dictionary.Clear();
+                        config.Clear();
+                        fetching.Clear();
                         break;
                     default:
                         scServerConnected.State = false;
@@ -69,11 +72,34 @@ namespace ModbusIntegratorTuning
                 case "fetching":
                     var method1 = new MethodInvoker(() =>
                     {
-                        var key = $"{pointname}\\{propname}";
-                        if (!dictionary.ContainsKey(key))
-                            dictionary.Add(key, value);
+                        // для работы списка свойств
+                        var key = $"{pointname}.{propname}";
+                        if (!fetching.ContainsKey(key))
+                            fetching.Add(key, value);
                         else
-                            dictionary[key] = value;
+                            fetching[key] = value;
+
+                        tsslStatus.Text = $"{category}:{key}={value}";
+
+                        var found = false;
+                        foreach (var lvi in lvValues.Items.Cast<ListViewItem>())
+                        {
+                            if ($"{lvi.Tag}" == key)
+                            {
+                                found = true;
+                                lvi.SubItems[1].Text = value;
+                                break;
+                            }
+                        }
+                        if (!found)
+                        {
+                            var lvi = new ListViewItem(Path.GetFileName(key));
+                            lvi.SubItems.Add(value);
+                            lvi.Tag = key;
+                            lvValues.Items.Add(lvi);
+                            lvValues.Sort();
+                        }
+
                     });
                     if (InvokeRequired)
                         BeginInvoke(method1);
@@ -125,6 +151,12 @@ namespace ModbusIntegratorTuning
                                 }
                                 break;
                         }
+                        // для работы списка свойств
+                        var key = $"{pointname}\\{propname}";
+                        if (!config.ContainsKey(key))
+                            config.Add(key, value);
+                        else
+                            config[key] = value;
                     });
                     if (InvokeRequired)
                         BeginInvoke(method3);
@@ -174,72 +206,92 @@ namespace ModbusIntegratorTuning
         private void treeView_MouseDown(object sender, MouseEventArgs e)
         {
             var treeNodes = (TreeView)sender;
+
+            if (treeNodes == tvNodes)
+                tvSources.SelectedNode = null;
+            else
+                tvNodes.SelectedNode = null;
+
             treeNodes.SelectedNode = treeNodes.GetNodeAt(e.Location);
             tsslStatus.Text = $"{treeNodes.SelectedNode?.FullPath}";
             if (treeNodes.SelectedNode == null)
             {
                 lvProps.Items.Clear();
                 lvProps.Columns.Clear();
+                lvValues.Items.Clear();
+                lvValues.Columns.Clear();
             }
         }
 
         private void treeNodes_AfterSelect(object sender, TreeViewEventArgs e)
         {
             var akey = $"{e.Node?.FullPath}";
-            lvProps.BeginUpdate();
-            try
+
+            foreach (var item in new[] {
+                                    new { View = lvProps, Dict = config },
+                                    new { View = lvValues, Dict = fetching }
+                                })
             {
-                lvProps.Items.Clear();
-                lvProps.Columns.Clear();
-                lvProps.Columns.Add(new ColumnHeader() { Text = "Property Name", Width = 100 });
-                lvProps.Columns.Add(new ColumnHeader() { Text = "Property Value", Width = 100 });
-                var items = new List<ListViewItem>();
-                foreach (var key in dictionary.Keys)
+                item.View.BeginUpdate();
+                try
                 {
-                    if (key.StartsWith(akey))
+                    item.View.Items.Clear();
+                    item.View.Columns.Clear();
+                    item.View.Columns.Add(new ColumnHeader() { Text = "Property Name", Width = 100 });
+                    item.View.Columns.Add(new ColumnHeader() { Text = "Property Value", Width = 100 });
+                    //
+                    var items = new List<ListViewItem>();
+                    foreach (var key in item.Dict.Keys)
                     {
-                        var prop = $"{key.Substring(akey.Length + 1)}";
-                        if (prop.IndexOf('\\') < 0)
+                        if (key.StartsWith(akey))
                         {
-                            var vals = dictionary[key].Split(';');
-                            if (prop.ToLower() == "#columns")
+                            var prop = $"{key.Substring(akey.Length + 1)}";
+                            if (prop.IndexOf('\\') < 0)
                             {
-                                lvProps.Columns.Clear();
-                                lvProps.Columns.Add(new ColumnHeader() { Text = "Property Name", Width = 100 });
+                                var vals = item.Dict[key].Split(';');
+                                if (prop.ToLower() == "#columns")
+                                {
+                                    item.View.Columns.Clear();
+                                    item.View.Columns.Add(new ColumnHeader() { Text = "Property Name", Width = 100 });
+                                    foreach (var value in vals)
+                                        item.View.Columns.Add(new ColumnHeader() { Text = value, Width = 70 });
+                                }
+                                if (prop.StartsWith("#")) continue;
+                                var lvi = new ListViewItem(prop) { Tag = key };
                                 foreach (var value in vals)
-                                    lvProps.Columns.Add(new ColumnHeader() { Text = value, Width = 70 });
+                                    lvi.SubItems.Add(value);
+                                items.Add(lvi);
                             }
-                            if (prop.StartsWith("#")) continue;
-                            var lvi = new ListViewItem(prop) { Tag = key };
-                            foreach (var value in vals)
-                                lvi.SubItems.Add(value);
-                            items.Add(lvi);
                         }
                     }
+                    item.View.Items.AddRange(items.OrderBy(x => x.Text).ToArray());
+                    ColumnAlligment(item.View);
                 }
-                foreach (var item in items.OrderBy(x => x.Text))
-                    lvProps.Items.Add(item);
-                // настройка выравнивания целочисленных стобцов к правой стороне
-                foreach (var column in lvProps.Columns.Cast<ColumnHeader>().Skip(1))
+                finally
                 {
-                    var allIsInteger = true;
-                    foreach (var lvi in lvProps.Items.Cast<ListViewItem>())
-                    {
-                        if (column.Index >= lvi.SubItems.Count) break;
-                        var value = lvi.SubItems[column.Index].Text;
-                        if (!int.TryParse(value, out int ival))
-                        {
-                            allIsInteger = false;
-                            break;
-                        }
-                    }
-                    if (allIsInteger)
-                        column.TextAlign = HorizontalAlignment.Right;
+                    item.View.EndUpdate();
                 }
             }
-            finally
+        }
+
+        private void ColumnAlligment(ListView lv)
+        {
+            // настройка выравнивания целочисленных стобцов к правой стороне
+            foreach (var column in lv.Columns.Cast<ColumnHeader>().Skip(1))
             {
-                lvProps.EndUpdate();
+                var allIsInteger = true;
+                foreach (var lvi in lv.Items.Cast<ListViewItem>())
+                {
+                    if (column.Index >= lvi.SubItems.Count) break;
+                    var value = lvi.SubItems[column.Index].Text;
+                    if (!int.TryParse(value, out int ival))
+                    {
+                        allIsInteger = false;
+                        break;
+                    }
+                }
+                if (allIsInteger)
+                    column.TextAlign = HorizontalAlignment.Right;
             }
         }
 
@@ -288,20 +340,20 @@ namespace ModbusIntegratorTuning
 
         private void lvProps_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (lvProps.SelectedItems.Count == 0) return;
-            var lvi = lvProps.SelectedItems[0];
+            var lv = (ListView)sender;
+            if (lv.SelectedItems.Count == 0) return;
+            var lvi = lv.SelectedItems[0];
             tsslStatus.Text = $"{lvi.Tag}";
         }
-
-        private int lastColumn = -1;
 
         private void lvProps_ColumnClick(object sender, ColumnClickEventArgs e)
         {
             var lv = (ListView)sender;
+            var lastColumn = (int)(lv.Tag ?? -1); 
             if (lastColumn != e.Column)
             {
                 lv.ListViewItemSorter = new ListViewItemComparer(e.Column);
-                lastColumn = e.Column;
+                lv.Tag = e.Column;
             }
             else
             {
@@ -319,11 +371,6 @@ namespace ModbusIntegratorTuning
             locEvClient.Reconnect();
         }
 
-        private void treeNodes_Leave(object sender, EventArgs e)
-        {
-            var treeNodes = (TreeView)sender;
-            treeNodes.SelectedNode = null;
-        }
     }
 
     // Implements the manual sorting of items by columns.

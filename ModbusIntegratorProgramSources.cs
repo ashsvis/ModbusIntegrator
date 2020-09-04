@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net;
 
@@ -52,6 +51,7 @@ namespace ModbusIntegrator
                             {
                                 fetchParams.Add(new AskParamData
                                 {
+                                    Prefix = $"{socketName}\\{nodeName}",
                                     ParamName = key,
                                     Node = modbusNode,  
                                     Func = func,        // также как и Channel
@@ -73,7 +73,7 @@ namespace ModbusIntegrator
                                 var pointname = $"{socketName}\\{nodeName}\\FetchParams";
                                 var propname = key;
                                 var value = mif.ReadString(fetchParamsSection, key, "");
-                                ModbusIntegratorEventService.SetPropValue("fetching", pointname, propname, value);
+                                ModbusIntegratorEventService.SetPropValue("config", pointname, propname, value);
                             }
                         }
                         var archives = "HourArchive;DayArchive;MonthArchive".Split(';');
@@ -91,7 +91,7 @@ namespace ModbusIntegrator
                                     var pointname = $"{socketName}\\{nodeName}\\archives\\{archiveName}";
                                     var propname = key;
                                     var value = mif.ReadString(archiveSection, key, "");
-                                    ModbusIntegratorEventService.SetPropValue("fetching", pointname, propname, value);
+                                    ModbusIntegratorEventService.SetPropValue("config", pointname, propname, value);
                                 }
                             }
                         }
@@ -116,7 +116,6 @@ namespace ModbusIntegrator
                                 Port = ipPort,
                                 SendTimeout = sendTimeout,
                                 ReceiveTimeout = receiveTimeout,
-                                //Node = modbusNode
                                 FetchParams = fetchParams
                             };
                             worker.RunWorkerAsync(tcptuning);

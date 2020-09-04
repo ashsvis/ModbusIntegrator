@@ -48,6 +48,7 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.lvProps = new System.Windows.Forms.ListView();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.lvValues = new System.Windows.Forms.ListView();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -83,6 +84,7 @@
             this.tableLayoutPanel3.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -98,7 +100,6 @@
             this.tvNodes.Size = new System.Drawing.Size(212, 164);
             this.tvNodes.TabIndex = 3;
             this.tvNodes.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeNodes_AfterSelect);
-            this.tvNodes.Leave += new System.EventHandler(this.treeNodes_Leave);
             this.tvNodes.MouseDown += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseDown);
             // 
             // tableLayoutPanel1
@@ -256,7 +257,6 @@
             this.tvSources.Size = new System.Drawing.Size(212, 167);
             this.tvSources.TabIndex = 1;
             this.tvSources.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeNodes_AfterSelect);
-            this.tvSources.Leave += new System.EventHandler(this.treeNodes_Leave);
             this.tvSources.MouseDown += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseDown);
             // 
             // tableLayoutPanel3
@@ -311,7 +311,6 @@
             // 
             // lvProps
             // 
-            this.lvProps.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lvProps.FullRowSelect = true;
             this.lvProps.HideSelection = false;
             this.lvProps.Location = new System.Drawing.Point(3, 3);
@@ -326,6 +325,7 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.lvValues);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
@@ -333,6 +333,20 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Fetching values";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // lvValues
+            // 
+            this.lvValues.FullRowSelect = true;
+            this.lvValues.HideSelection = false;
+            this.lvValues.Location = new System.Drawing.Point(3, 3);
+            this.lvValues.MultiSelect = false;
+            this.lvValues.Name = "lvValues";
+            this.lvValues.Size = new System.Drawing.Size(402, 343);
+            this.lvValues.TabIndex = 1;
+            this.lvValues.UseCompatibleStateImageBehavior = false;
+            this.lvValues.View = System.Windows.Forms.View.Details;
+            this.lvValues.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.lvProps_ColumnClick);
+            this.lvValues.SelectedIndexChanged += new System.EventHandler(this.lvProps_SelectedIndexChanged);
             // 
             // menuStrip1
             // 
@@ -517,6 +531,7 @@
             this.tableLayoutPanel3.PerformLayout();
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
+            this.tabPage2.ResumeLayout(false);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -563,6 +578,7 @@
         private System.Windows.Forms.TreeView tvSources;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ListView lvValues;
     }
 }
 

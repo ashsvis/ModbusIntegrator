@@ -171,7 +171,7 @@ namespace ModbusIntegrator
                                             modbusHr = (ModbusHoldingRegister)modbusitem;
                                             modbusHr.IntValue = BitConverter.ToInt16(BitConverter.GetBytes(singleValue), 0);
                                             while (!DictModbusItems.TryUpdate(childName, modbusHr, modbusHr)) Thread.Sleep(10);
-                                            locEvClient.UpdateProperty("Fetching", $"Node:{nodeAddr}:{funcCode}", $"HR:{startAddr}", $"{modbusHr.IntValue}", false);
+                                            locEvClient.UpdateProperty("fetching", $"Node:{nodeAddr}:{funcCode}", $"HR:{startAddr}", $"{modbusHr.IntValue}", false);
                                             list.Clear();
                                             list.AddRange(answer.Select(t => string.Format("{0}", t)));
                                             //Say("A:" + string.Join(",", list));
@@ -199,7 +199,7 @@ namespace ModbusIntegrator
                                                 modbusHr = (ModbusHoldingRegister)modbusitem;
                                                 modbusHr.IntValue = BitConverter.ToInt16(BitConverter.GetBytes(value), 0);
                                                 while (!DictModbusItems.TryUpdate(childName, modbusHr, modbusHr)) Thread.Sleep(10);
-                                                locEvClient.UpdateProperty("Fetching", $"Node:{nodeAddr}:{funcCode}", $"HR:{startAddr + i}", $"{modbusHr.IntValue}", false);
+                                                locEvClient.UpdateProperty("fetching", $"Node:{nodeAddr}:{funcCode}", $"HR:{startAddr + i}", $"{modbusHr.IntValue}", false);
                                                 n = n + 2;
                                             }
                                             list.Clear();
