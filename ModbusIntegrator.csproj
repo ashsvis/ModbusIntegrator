@@ -79,13 +79,13 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="ModbusIntegrator.ini" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="ModbusIntegratorEvent\ModbusIntegratorEvent.csproj">
       <Project>{995d0b87-8ccc-4b81-a63d-cfee69366e5a}</Project>
       <Name>ModbusIntegratorEvent</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ModbusIntegrator.ini" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

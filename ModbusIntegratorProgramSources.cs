@@ -16,7 +16,7 @@ namespace ModbusIntegrator
                 foreach (var socketName in mif.ReadSectionValues(root))
                 {
                     if (mif.KeyExists(socketName, "IpPort"))
-                        ModbusIntegratorEventService.SetPropValue("fetching", socketName, "IpPort", mif.ReadString(socketName, "IpPort", "502"));
+                        ModbusIntegratorEventService.SetPropValue("config", socketName, "IpPort", mif.ReadString(socketName, "IpPort", "502"));
                     var itemName = socketName;
                     ModbusIntegratorEventService.SetPropValue("config", "add", itemName, itemName);
                     var section = $"{socketName}_nodes";
@@ -31,7 +31,7 @@ namespace ModbusIntegrator
                             var pointname = $"{socketName}\\{nodeName}";
                             var propname = key;
                             var value = mif.ReadString(nodeName, key, "");
-                            ModbusIntegratorEventService.SetPropValue("fetching", pointname, propname, value);
+                            ModbusIntegratorEventService.SetPropValue("config", pointname, propname, value);
                         }
                         // загрузка форматов перестановки байтов (для Modbus устройств)
                         var swapFormats = new Dictionary<string, string>();
