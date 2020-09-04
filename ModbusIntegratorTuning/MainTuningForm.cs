@@ -91,7 +91,7 @@ namespace ModbusIntegratorTuning
                                 break;
                             }
                         }
-                        if (!found)
+                        if (!found && Path.GetDirectoryName(pointname) == $"{selectedPath}")
                         {
                             var lvi = new ListViewItem(Path.GetFileName(key));
                             lvi.SubItems.Add(value);
@@ -203,6 +203,8 @@ namespace ModbusIntegratorTuning
         //    locEvClient.UpdateProperty("config", "add", node.FullPath, node.FullPath);
         //}
 
+        private string selectedPath;
+
         private void treeView_MouseDown(object sender, MouseEventArgs e)
         {
             var treeNodes = (TreeView)sender;
@@ -213,7 +215,8 @@ namespace ModbusIntegratorTuning
                 tvNodes.SelectedNode = null;
 
             treeNodes.SelectedNode = treeNodes.GetNodeAt(e.Location);
-            tsslStatus.Text = $"{treeNodes.SelectedNode?.FullPath}";
+            selectedPath = $"{treeNodes.SelectedNode?.FullPath}";
+            tsslStatus.Text = selectedPath;
             if (treeNodes.SelectedNode == null)
             {
                 lvProps.Items.Clear();
@@ -226,7 +229,7 @@ namespace ModbusIntegratorTuning
         private void treeNodes_AfterSelect(object sender, TreeViewEventArgs e)
         {
             var akey = $"{e.Node?.FullPath}";
-
+            selectedPath = akey;
             foreach (var item in new[] {
                                     new { View = lvProps, Dict = config },
                                     new { View = lvValues, Dict = fetching }
