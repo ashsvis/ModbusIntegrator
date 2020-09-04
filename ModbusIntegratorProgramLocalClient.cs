@@ -1,4 +1,4 @@
-﻿using ModbusIntegratorEventClient;
+﻿using ModbusIntegratorEvent;
 using System;
 
 namespace ModbusIntegrator

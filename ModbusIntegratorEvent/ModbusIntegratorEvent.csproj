@@ -7,8 +7,8 @@
     <ProjectGuid>{995D0B87-8CCC-4B81-A63D-CFEE69366E5A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ModbusIntegratorEventClient</RootNamespace>
-    <AssemblyName>ModbusIntegratorEventClient</AssemblyName>
+    <RootNamespace>ModbusIntegratorEvent</RootNamespace>
+    <AssemblyName>ModbusIntegratorEvent</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

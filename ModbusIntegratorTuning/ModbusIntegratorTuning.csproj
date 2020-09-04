@@ -80,9 +80,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ModbusIntegratorEventClient\ModbusIntegratorEventClient.csproj">
+    <ProjectReference Include="..\ModbusIntegratorEvent\ModbusIntegratorEvent.csproj">
       <Project>{995d0b87-8ccc-4b81-a63d-cfee69366e5a}</Project>
-      <Name>ModbusIntegratorEventClient</Name>
+      <Name>ModbusIntegratorEvent</Name>
     </ProjectReference>
     <ProjectReference Include="..\StatusControl\StatusControl.csproj">
       <Project>{0fd63a3b-8082-4f1f-8a0d-41ed224c6359}</Project>

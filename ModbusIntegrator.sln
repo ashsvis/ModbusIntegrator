@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModbusIntegrator", "ModbusI
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModbusIntegratorTuning", "ModbusIntegratorTuning\ModbusIntegratorTuning.csproj", "{02ACE498-03A0-4270-88CF-6F57C67319E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModbusIntegratorEventClient", "ModbusIntegratorEventClient\ModbusIntegratorEventClient.csproj", "{995D0B87-8CCC-4B81-A63D-CFEE69366E5A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModbusIntegratorEvent", "ModbusIntegratorEvent\ModbusIntegratorEvent.csproj", "{995D0B87-8CCC-4B81-A63D-CFEE69366E5A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatusControl", "StatusControl\StatusControl.csproj", "{0FD63A3B-8082-4F1F-8A0D-41ED224C6359}"
 EndProject

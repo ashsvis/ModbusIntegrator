@@ -1,4 +1,4 @@
-﻿using ModbusIntegratorEventClient;
+﻿using ModbusIntegratorEvent;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

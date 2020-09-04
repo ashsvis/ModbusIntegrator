@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ModbusIntegratorEventClient")]
+[assembly: AssemblyTitle("ModbusIntegratorEvent")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("ModbusIntegratorEventClient")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2020")]
+[assembly: AssemblyCompany("AShHome")]
+[assembly: AssemblyProduct("ModbusIntegratorEvent")]
+[assembly: AssemblyCopyright("Copyright © ashsvis@gmail.com 2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

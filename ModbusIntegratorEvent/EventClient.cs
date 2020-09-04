@@ -1,11 +1,10 @@
 ﻿using System;
-using System.ComponentModel;
 using System.ServiceModel;
 using System.Threading;
 using System.Timers;
 using Binding = System.ServiceModel.Channels.Binding;
 
-namespace ModbusIntegratorEventClient
+namespace ModbusIntegratorEvent
 {
     public enum ClientConnectionStatus
     {

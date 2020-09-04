@@ -8,11 +8,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ModbusIntegratorEventClient.ModbusIntegratorServiceReference {
+namespace ModbusIntegratorEvent.ModbusIntegratorServiceReference {
     
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ServiceModel.ServiceContractAttribute(ConfigurationName="ModbusIntegratorServiceReference.IModbusIntegratorEventService", CallbackContract=typeof(ModbusIntegratorEventClient.ModbusIntegratorServiceReference.IModbusIntegratorEventServiceCallback))]
+    [System.ServiceModel.ServiceContractAttribute(ConfigurationName="ModbusIntegratorServiceReference.IModbusIntegratorEventService", CallbackContract=typeof(ModbusIntegratorEvent.ModbusIntegratorServiceReference.IModbusIntegratorEventServiceCallback))]
     public interface IModbusIntegratorEventService {
         
         [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IModbusIntegratorEventService/RegisterForUpdates")]
@@ -36,12 +36,12 @@ namespace ModbusIntegratorEventClient.ModbusIntegratorServiceReference {
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public interface IModbusIntegratorEventServiceChannel : ModbusIntegratorEventClient.ModbusIntegratorServiceReference.IModbusIntegratorEventService, System.ServiceModel.IClientChannel {
+    public interface IModbusIntegratorEventServiceChannel : ModbusIntegratorEvent.ModbusIntegratorServiceReference.IModbusIntegratorEventService, System.ServiceModel.IClientChannel {
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public partial class ModbusIntegratorEventServiceClient : System.ServiceModel.DuplexClientBase<ModbusIntegratorEventClient.ModbusIntegratorServiceReference.IModbusIntegratorEventService>, ModbusIntegratorEventClient.ModbusIntegratorServiceReference.IModbusIntegratorEventService {
+    public partial class ModbusIntegratorEventServiceClient : System.ServiceModel.DuplexClientBase<ModbusIntegratorEvent.ModbusIntegratorServiceReference.IModbusIntegratorEventService>, ModbusIntegratorEvent.ModbusIntegratorServiceReference.IModbusIntegratorEventService {
         
         public ModbusIntegratorEventServiceClient(System.ServiceModel.InstanceContext callbackInstance) : 
                 base(callbackInstance) {

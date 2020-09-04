@@ -12,9 +12,6 @@ namespace ModbusIntegrator
 {
     partial class ModbusIntegratorProgram
     {
-        static List<AskParamData> FetchParams = new List<AskParamData>();
-        static List<AskParamData> FetchArchives = new List<AskParamData>();
-
         private static void ModbusWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             var worker = (BackgroundWorker)sender;
@@ -29,12 +26,17 @@ namespace ModbusIntegrator
 
         private static void ModbusWorker_DoWork(object sender, DoWorkEventArgs e)
         {
+            var fetchParams = new List<AskParamData>();
+            var fetchArchives = new List<AskParamData>();
+
             var worker = (BackgroundWorker)sender;
             var lastsecond = DateTime.Now.Second;
             var lastminute = -1;
             var lasthour = -1;
 
             var parameters = e.Argument as TcpTuning;
+
+            fetchParams.AddRange(parameters.FetchParams);
 
             var remoteEp = new IPEndPoint(parameters.Address, parameters.Port);
 
@@ -58,9 +60,9 @@ namespace ModbusIntegrator
                             {
                                 byte[] buff;
                                 int numBytes;
-                                for (var k = 0; k < FetchParams.Count; k++)
+                                for (var k = 0; k < fetchParams.Count; k++)
                                 {
-                                    var item = FetchParams[k];
+                                    var item = fetchParams[k];
                                     socket.Send(PrepareFetchParam(item.Node, item.Func, item.RegAddr, item.TypeValue));
                                     Thread.Sleep(500);
                                     buff = new byte[8192];
@@ -70,21 +72,23 @@ namespace ModbusIntegrator
                                         var answer = CleanAnswer(buff);
                                         if (CheckAnswer(answer, item.Node, item.Func, item.TypeValue))
                                         {
-                                            var result = EncodeFetchAnswer(answer, item.Node, item.Func, item.RegAddr, item.TypeValue, item.TypeSwap, item.UnitValue);
+                                            var result = EncodeFetchAnswer(answer, item.Node, item.Func, item.RegAddr, item.TypeValue, item.TypeSwap, item.EU);
 
                                             if (item.LastValue != result.Value)
                                             {
                                                 item.LastValue = result.Value;
 
-                                                worker.ReportProgress(answer.Length, $"{item.ParamName}\t{result}");
+                                                //worker.ReportProgress(answer.Length, $"{item.ParamName}\t{result}");
 
-                                                var columns = new Dictionary<string, object> {
-                                                            { "TagName", item.ParamName },
-                                                            { "Value", result.Value ?? "" },
-                                                            { "Unit", result.Unit ?? "" },
-                                                        };
-                                                //if (!server.ReplaceInto("fetching", columns))
-                                                //    worker.ReportProgress(answer.Length, server.LastError);
+                                                //var columns = new Dictionary<string, object> {
+                                                //            { "TagName", item.ParamName },
+                                                //            { "Value", result.Value ?? "" },
+                                                //            { "Unit", result.EU ?? "" },
+                                                //        };
+                                                var pointname = item.ParamName;
+                                                var propname = "PV";
+                                                var value = result.Value;
+                                                locEvClient.UpdateProperty("Fetching", pointname, propname, value);
                                             }
                                         }
                                     }
@@ -118,9 +122,9 @@ namespace ModbusIntegrator
                             int recCount = 0;
                             DateTime d = new DateTime(1979, 1, 1);
                             bool dateExists = false;
-                            for (var k = 0; k < FetchArchives.Count; k++)
+                            for (var k = 0; k < fetchArchives.Count; k++)
                             {
-                                var item = FetchArchives[k];
+                                var item = fetchArchives[k];
                                 socket.Send(PrepareFetchParam(item.Node, item.Func, item.RegAddr, item.TypeValue));
                                 Thread.Sleep(500);
                                 buff = new byte[8192];
@@ -130,7 +134,7 @@ namespace ModbusIntegrator
                                     var answer = CleanAnswer(buff);
                                     if (CheckAnswer(answer, item.Node, item.Func, item.TypeValue))
                                     {
-                                        var result = EncodeFetchAnswer(answer, item.Node, item.Func, item.RegAddr, item.TypeValue, item.TypeSwap, item.UnitValue);
+                                        var result = EncodeFetchAnswer(answer, item.Node, item.Func, item.RegAddr, item.TypeValue, item.TypeSwap, item.EU);
                                         if (item.ParamName.StartsWith("$Records") && int.TryParse(result.Value, out recCount))
                                         {
                                             i = 0;
@@ -249,7 +253,7 @@ namespace ModbusIntegrator
                 Func = func,
                 RegAddr = regAddr,
                 Value = value,
-                Unit = unitValue
+                EU = unitValue
             };
         }
 
@@ -383,10 +387,10 @@ namespace ModbusIntegrator
     {
         public byte Node { get; set; }         // байт адреса прибора
         public byte Func { get; set; }         // номер функции Modbus
-        public int RegAddr { get; set; }       // номер регистра
+        public int RegAddr { get; set; }       // номер регистра (начиная с 1)
         public string TypeValue { get; set; }  // тип переменной
         public string TypeSwap { get; set; }   // тип перестановки
-        public string UnitValue { get; set; }  // единица измерения
+        public string EU { get; set; }  // единица измерения
         public string ParamName { get; set; }
         public string LastValue { get; set; }
         public bool ExistsInSqlTable { get; set; }
@@ -396,13 +400,13 @@ namespace ModbusIntegrator
     {
         public byte Node { get; set; }         // байт адреса прибора
         public byte Func { get; set; }         // номер функции Modbus
-        public int RegAddr { get; set; }       // номер регистра
+        public int RegAddr { get; set; }       // номер регистра (начиная с 1)
         public string Value { get; set; }
-        public string Unit { get; set; }
+        public string EU { get; set; }
 
         public override string ToString()
         {
-            return $"{Node} {Func} {RegAddr} {Value} {Unit}";
+            return $"{Node} {Func} {RegAddr} {Value} {EU}";
         }
     }
 
