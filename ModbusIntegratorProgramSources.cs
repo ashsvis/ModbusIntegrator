@@ -24,6 +24,7 @@ namespace ModbusIntegrator
                     {
                         itemName = $"{socketName}\\{mif.ReadString(section, nodeName, nodeName)}";
                         ModbusIntegratorEventService.SetPropValue("config", "add", itemName, nodeName);
+
                         // загрузка общих параметров настройки узла
                         foreach (var key in mif.ReadSectionKeys(nodeName))
                         {
@@ -32,93 +33,34 @@ namespace ModbusIntegrator
                             var value = mif.ReadString(nodeName, key, "");
                             ModbusIntegratorEventService.SetPropValue("config", pointname, propname, value);
                         }
+
                         // загрузка форматов перестановки байтов (для Modbus устройств)
                         var swapFormats = new Dictionary<string, string>();
                         foreach (var key in mif.ReadSectionKeys($"{nodeName}_SwapFormats"))
                             swapFormats.Add(key, mif.ReadString($"{nodeName}_SwapFormats", key, ""));
                         byte.TryParse(mif.ReadString(nodeName, "ModbusNode", "247"), out byte modbusNode);
-                        // заполнение списка параметоров опроса
+
+                        // заполнение списка параметров опроса
                         var fetchParams = new List<AskParamData>();
                         var suffix = "FetchParams";
                         var paramsSection = $"{nodeName}_{suffix}";
-                        foreach (var key in mif.ReadSectionKeys(paramsSection))
-                        {
-                            if (key.StartsWith("#")) continue;
-                            var vals = mif.ReadString(paramsSection, key, "").Split(';');
-                            if (!string.IsNullOrWhiteSpace(key) && vals.Length >= 4 &&
-                                byte.TryParse(vals[0], out byte func) &&
-                                int.TryParse(vals[1], out int regaddr))
-                            {
-                                fetchParams.Add(new AskParamData
-                                {
-                                    Prefix = $"{socketName}\\{nodeName}\\{suffix}",
-                                    ParamName = key,
-                                    Node = modbusNode,  
-                                    Func = func,        // также как и Channel
-                                    RegAddr = regaddr,  // также как и Parameter
-                                    TypeValue = vals[2],
-                                    TypeSwap = swapFormats.ContainsKey(vals[2]) ? swapFormats[vals[2]] : string.Empty,
-                                    EU = vals[3]
-                                });
-                            }
-                        }
+                        FillFetchParameters(socketName, nodeName, swapFormats, modbusNode, fetchParams, suffix, paramsSection);
+                        // заполнение списка параметров конфигурации 
                         var fetchParamsSection = $"{nodeName}_{suffix}";
-                        if (mif.SectionExists(fetchParamsSection))
-                        {
-                            itemName = $"{socketName}\\{nodeName}\\{suffix}";
-                            ModbusIntegratorEventService.SetPropValue("config", "add", itemName, nodeName);
-                            // загрузка узловых параметров опроса
-                            foreach (var key in mif.ReadSectionKeys(fetchParamsSection))
-                            {
-                                var pointname = $"{socketName}\\{nodeName}\\{suffix}";
-                                var propname = key;
-                                var value = mif.ReadString(fetchParamsSection, key, "");
-                                ModbusIntegratorEventService.SetPropValue("config", pointname, propname, value);
-                            }
-                        }
+                        FillConfigParameters(socketName, nodeName, suffix, fetchParamsSection);
                         var fetchArchives = new List<AskParamData>();
                         var archives = "HourArchive;DayArchive;MonthArchive".Split(';');
+
                         // загрузка секций настройки архивирования для узла (часовых, суточных и месячных)
                         foreach (var archiveName in archives)
                         {
-
+                            // заполнение списка параметров опроса
                             var archivesSection = $"{nodeName}_{archiveName}";
-                            foreach (var key in mif.ReadSectionKeys(archivesSection))
-                            {
-                                if (key.StartsWith("#")) continue;
-                                var vals = mif.ReadString(archivesSection, key, "").Split(';');
-                                if (!string.IsNullOrWhiteSpace(key) && vals.Length >= 4 &&
-                                    byte.TryParse(vals[0], out byte func) &&
-                                    int.TryParse(vals[1], out int regaddr))
-                                {
-                                    fetchArchives.Add(new AskParamData
-                                    {
-                                        Prefix = $"{socketName}\\{nodeName}\\archives\\{archiveName}",
-                                        ParamName = key,
-                                        Node = modbusNode,
-                                        Func = func,        // также как и Channel
-                                        RegAddr = regaddr,  // также как и Parameter
-                                        TypeValue = vals[2],
-                                        TypeSwap = swapFormats.ContainsKey(vals[2]) ? swapFormats[vals[2]] : string.Empty,
-                                        EU = vals[3]
-                                    });
-                                }
-                            }
-
+                            suffix = $"archives\\{archiveName}";
+                            FillFetchParameters(socketName, nodeName, swapFormats, modbusNode, fetchArchives, suffix, archivesSection);
+                            // заполнение списка параметров конфигурации
                             var archiveSection = $"{nodeName}_{archiveName}";
-                            if (mif.SectionExists(archiveSection))
-                            {
-                                itemName = $"{socketName}\\{nodeName}\\archives\\{archiveName}";
-                                ModbusIntegratorEventService.SetPropValue("config", "add", itemName, nodeName);
-                                // загрузка параметров настройки для архивирования
-                                foreach (var key in mif.ReadSectionKeys(archiveSection))
-                                {
-                                    var pointname = $"{socketName}\\{nodeName}\\archives\\{archiveName}";
-                                    var propname = key;
-                                    var value = mif.ReadString(archiveSection, key, "");
-                                    ModbusIntegratorEventService.SetPropValue("config", pointname, propname, value);
-                                }
-                            }
+                            FillConfigParameters(socketName, nodeName, suffix, archiveSection);
                         }
 
                         // проверка настройки включения узла
@@ -148,6 +90,48 @@ namespace ModbusIntegrator
                             worker.RunWorkerAsync(tcptuning);
                         }
                     }
+                }
+            }
+        }
+
+        private static void FillConfigParameters(string socketName, string nodeName, string suffix, string section)
+        {
+            if (mif.SectionExists(section))
+            {
+                var itemName = $"{socketName}\\{nodeName}\\{suffix}";
+                ModbusIntegratorEventService.SetPropValue("config", "add", itemName, nodeName);
+                // загрузка узловых параметров опроса
+                foreach (var key in mif.ReadSectionKeys(section))
+                {
+                    var pointname = $"{socketName}\\{nodeName}\\{suffix}";
+                    var propname = key;
+                    var value = mif.ReadString(section, key, "");
+                    ModbusIntegratorEventService.SetPropValue("config", pointname, propname, value);
+                }
+            }
+        }
+
+        private static void FillFetchParameters(string socketName, string nodeName, Dictionary<string, string> swapFormats, byte modbusNode, List<AskParamData> fetchParams, string suffix, string paramsSection)
+        {
+            foreach (var key in mif.ReadSectionKeys(paramsSection))
+            {
+                if (key.StartsWith("#")) continue;
+                var vals = mif.ReadString(paramsSection, key, "").Split(';');
+                if (!string.IsNullOrWhiteSpace(key) && vals.Length >= 4 &&
+                    byte.TryParse(vals[0], out byte func) &&
+                    int.TryParse(vals[1], out int regaddr))
+                {
+                    fetchParams.Add(new AskParamData
+                    {
+                        Prefix = $"{socketName}\\{nodeName}\\{suffix}",
+                        ParamName = key,
+                        Node = modbusNode,
+                        Func = func,        // также как и Channel
+                        RegAddr = regaddr,  // также как и Parameter
+                        TypeValue = vals[2],
+                        TypeSwap = swapFormats.ContainsKey(vals[2]) ? swapFormats[vals[2]] : string.Empty,
+                        EU = vals[3]
+                    });
                 }
             }
         }
