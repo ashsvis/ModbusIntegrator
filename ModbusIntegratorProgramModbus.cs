@@ -40,19 +40,37 @@ namespace ModbusIntegrator
 
             var remoteEp = new IPEndPoint(parameters.Address, parameters.Port);
 
+            var busy = false;
+
             while (!worker.CancellationPending)
             {
                 var dt = DateTime.Now;
                 if (lastsecond == dt.Second) continue;
-                lastsecond = dt.Second;
                 // прошла секунда
-                if (dt.Second % 3 == 0)
+                if (busy) continue;
+                busy = true;
+                try
+                {
                     FetchParameters(fetchParams, worker, parameters, remoteEp, fetchParams);
-
+                }
+                finally
+                {
+                    lastsecond = dt.Second;
+                    busy = false;
+                }
                 if (lastminute == dt.Minute) continue;
-                lastminute = dt.Minute;
                 // прошла минута
-                FetchParameters(fetchParams, worker, parameters, remoteEp, fetchArchives);
+                if (busy) continue;
+                busy = true;
+                try
+                {
+                    FetchParameters(fetchParams, worker, parameters, remoteEp, fetchArchives);
+                }
+                finally
+                {
+                    lastminute = dt.Minute;
+                    busy = false;
+                }
 
                 if (lasthour != dt.Hour && dt.Minute == 0)
                 {
