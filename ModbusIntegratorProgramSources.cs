@@ -36,11 +36,11 @@ namespace ModbusIntegrator
                         var swapFormats = new Dictionary<string, string>();
                         foreach (var key in mif.ReadSectionKeys($"{nodeName}_SwapFormats"))
                             swapFormats.Add(key, mif.ReadString($"{nodeName}_SwapFormats", key, ""));
-                        byte modbusNode = 247;
-                        byte.TryParse(mif.ReadString(nodeName, "ModbusNode", "247"), out modbusNode);
+                        byte.TryParse(mif.ReadString(nodeName, "ModbusNode", "247"), out byte modbusNode);
                         // заполнение списка параметоров опроса
                         var fetchParams = new List<AskParamData>();
-                        var paramsSection = $"{nodeName}_FetchParams";
+                        var suffix = "FetchParams";
+                        var paramsSection = $"{nodeName}_{suffix}";
                         foreach (var key in mif.ReadSectionKeys(paramsSection))
                         {
                             if (key.StartsWith("#")) continue;
@@ -51,35 +51,60 @@ namespace ModbusIntegrator
                             {
                                 fetchParams.Add(new AskParamData
                                 {
-                                    Prefix = $"{socketName}\\{nodeName}",
+                                    Prefix = $"{socketName}\\{nodeName}\\{suffix}",
                                     ParamName = key,
                                     Node = modbusNode,  
                                     Func = func,        // также как и Channel
                                     RegAddr = regaddr,  // также как и Parameter
                                     TypeValue = vals[2],
-                                    TypeSwap = swapFormats[vals[2]],
+                                    TypeSwap = swapFormats.ContainsKey(vals[2]) ? swapFormats[vals[2]] : string.Empty,
                                     EU = vals[3]
                                 });
                             }
                         }
-                        var fetchParamsSection = $"{nodeName}_FetchParams";
+                        var fetchParamsSection = $"{nodeName}_{suffix}";
                         if (mif.SectionExists(fetchParamsSection))
                         {
-                            itemName = $"{socketName}\\{nodeName}\\FetchParams";
+                            itemName = $"{socketName}\\{nodeName}\\{suffix}";
                             ModbusIntegratorEventService.SetPropValue("config", "add", itemName, nodeName);
                             // загрузка узловых параметров опроса
                             foreach (var key in mif.ReadSectionKeys(fetchParamsSection))
                             {
-                                var pointname = $"{socketName}\\{nodeName}\\FetchParams";
+                                var pointname = $"{socketName}\\{nodeName}\\{suffix}";
                                 var propname = key;
                                 var value = mif.ReadString(fetchParamsSection, key, "");
                                 ModbusIntegratorEventService.SetPropValue("config", pointname, propname, value);
                             }
                         }
+                        var fetchArchives = new List<AskParamData>();
                         var archives = "HourArchive;DayArchive;MonthArchive".Split(';');
                         // загрузка секций настройки архивирования для узла (часовых, суточных и месячных)
                         foreach (var archiveName in archives)
                         {
+
+                            var archivesSection = $"{nodeName}_{archiveName}";
+                            foreach (var key in mif.ReadSectionKeys(archivesSection))
+                            {
+                                if (key.StartsWith("#")) continue;
+                                var vals = mif.ReadString(archivesSection, key, "").Split(';');
+                                if (!string.IsNullOrWhiteSpace(key) && vals.Length >= 4 &&
+                                    byte.TryParse(vals[0], out byte func) &&
+                                    int.TryParse(vals[1], out int regaddr))
+                                {
+                                    fetchArchives.Add(new AskParamData
+                                    {
+                                        Prefix = $"{socketName}\\{nodeName}\\archives\\{archiveName}",
+                                        ParamName = key,
+                                        Node = modbusNode,
+                                        Func = func,        // также как и Channel
+                                        RegAddr = regaddr,  // также как и Parameter
+                                        TypeValue = vals[2],
+                                        TypeSwap = swapFormats.ContainsKey(vals[2]) ? swapFormats[vals[2]] : string.Empty,
+                                        EU = vals[3]
+                                    });
+                                }
+                            }
+
                             var archiveSection = $"{nodeName}_{archiveName}";
                             if (mif.SectionExists(archiveSection))
                             {
@@ -95,6 +120,7 @@ namespace ModbusIntegrator
                                 }
                             }
                         }
+
                         // проверка настройки включения узла
                         var actived = mif.ReadString(nodeName, "Active", "false").ToLower() == "true";
                         var modbusTcp = actived && mif.ReadString(nodeName, "LinkProtokol", "false").ToLower() == "modbus tcp";
@@ -116,7 +142,8 @@ namespace ModbusIntegrator
                                 Port = ipPort,
                                 SendTimeout = sendTimeout,
                                 ReceiveTimeout = receiveTimeout,
-                                FetchParams = fetchParams
+                                FetchParams = fetchParams,
+                                FetchArchives = fetchArchives
                             };
                             worker.RunWorkerAsync(tcptuning);
                         }

@@ -10,5 +10,6 @@ namespace ModbusIntegrator
         public int SendTimeout { get; set; } = 5000;
         public int ReceiveTimeout { get; set; } = 5000;
         public List<AskParamData> FetchParams { get; set; } = new List<AskParamData>();
+        public List<AskParamData> FetchArchives { get; set; } = new List<AskParamData>();
     }
 }

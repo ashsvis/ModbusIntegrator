@@ -36,6 +36,7 @@ namespace ModbusIntegrator
             var parameters = e.Argument as TcpTuning;
 
             fetchParams.AddRange(parameters.FetchParams);
+            fetchArchives.AddRange(parameters.FetchArchives);
 
             var remoteEp = new IPEndPoint(parameters.Address, parameters.Port);
 
@@ -46,140 +47,64 @@ namespace ModbusIntegrator
                 lastsecond = dt.Second;
                 // прошла секунда
                 if (dt.Second % 3 == 0)
-                {
-                    try
-                    {
-                        using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
-                        {
-                            socket.SendTimeout = parameters.SendTimeout;
-                            socket.ReceiveTimeout = parameters.ReceiveTimeout;
-                            socket.Connect(remoteEp);
-                            Thread.Sleep(500);
-                            if (socket.Connected)
-                            {
-                                byte[] buff;
-                                int numBytes;
-                                for (var k = 0; k < fetchParams.Count; k++)
-                                {
-                                    var item = fetchParams[k];
-                                    socket.Send(PrepareFetchParam(item.Node, item.Func, item.RegAddr, item.TypeValue));
-                                    Thread.Sleep(500);
-                                    buff = new byte[8192];
-                                    numBytes = socket.Receive(buff);
-                                    if (numBytes > 0)
-                                    {
-                                        var answer = CleanAnswer(buff);
-                                        if (CheckAnswer(answer, item.Node, item.Func, item.TypeValue))
-                                        {
-                                            var result = EncodeFetchAnswer(answer, item.Node, item.Func, item.RegAddr, item.TypeValue, item.TypeSwap, item.EU);
-
-                                            if (item.LastValue != result.Value)
-                                            {
-                                                item.LastValue = result.Value;
-
-                                                //worker.ReportProgress(answer.Length, $"{item.ParamName}\t{result}");
-
-                                                var pointname = item.ParamName;
-                                                var propname = "PV";
-                                                var value = result.Value;
-                                                locEvClient.UpdateProperty("fetching", $"{item.Prefix}\\FetchParams\\{pointname}", propname, value);
-                                            }
-                                        }
-                                    }
-                                }
-                                socket.Disconnect(false);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        worker.ReportProgress(-1, ex.Message);
-                    }
-                }
+                    FetchParameters(fetchParams, worker, parameters, remoteEp, fetchParams);
 
                 if (lastminute == dt.Minute) continue;
                 lastminute = dt.Minute;
                 // прошла минута
-                //worker.ReportProgress(lastminute, $"{dt.Minute} минута");
-                try
-                {
-                    using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
-                    {
-                        socket.SendTimeout = parameters.SendTimeout;
-                        socket.ReceiveTimeout = parameters.ReceiveTimeout;
-                        socket.Connect(remoteEp);
-                        Thread.Sleep(500);
-                        if (socket.Connected)
-                        {
-                            byte[] buff;
-                            int numBytes, i = 0;
-                            int recCount = 0;
-                            DateTime d = new DateTime(1979, 1, 1);
-                            bool dateExists = false;
-                            for (var k = 0; k < fetchArchives.Count; k++)
-                            {
-                                var item = fetchArchives[k];
-                                socket.Send(PrepareFetchParam(item.Node, item.Func, item.RegAddr, item.TypeValue));
-                                Thread.Sleep(500);
-                                buff = new byte[8192];
-                                numBytes = socket.Receive(buff);
-                                if (numBytes > 0)
-                                {
-                                    var answer = CleanAnswer(buff);
-                                    if (CheckAnswer(answer, item.Node, item.Func, item.TypeValue))
-                                    {
-                                        var result = EncodeFetchAnswer(answer, item.Node, item.Func, item.RegAddr, item.TypeValue, item.TypeSwap, item.EU);
-                                        if (item.ParamName.StartsWith("$Records") && int.TryParse(result.Value, out recCount))
-                                        {
-                                            i = 0;
-                                            dateExists = false;
-
-                                            recCount = 5;
-                                        }
-                                        if (item.ParamName.StartsWith("$TimeRec") && DateTime.TryParse(result.Value, out d))
-                                        {
-                                            dateExists = true;
-                                            i++;
-                                        }
-                                        if (item.LastValue != result.Value)
-                                        {
-                                            item.LastValue = result.Value;
-
-                                            worker.ReportProgress(answer.Length, $"{item.ParamName}\t{result}");
-
-                                            if (dateExists && i <= recCount && !item.ParamName.StartsWith("$"))
-                                            {
-                                                //if (!server.RecordExists("archives", item.ParamName, d))
-                                                //{
-                                                //    var columns = new Dictionary<string, object>
-                                                //    {
-                                                //        { "TagName", item.ParamName },
-                                                //        { "Value", result.Value ?? "" },
-                                                //        { "Unit", result.Unit ?? "" },
-                                                //        { "Snaptime", d.ToString("yyyy-MM-dd HH:mm:ss.000") },
-                                                //    };
-                                                //    if (!server.InsertInto("archives", columns))
-                                                //        worker.ReportProgress(answer.Length, server.LastError);
-                                                //}
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            socket.Disconnect(false);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    worker.ReportProgress(-1, ex.Message);
-                }
+                FetchParameters(fetchParams, worker, parameters, remoteEp, fetchArchives);
 
                 if (lasthour != dt.Hour && dt.Minute == 0)
                 {
                     lasthour = dt.Hour;
                     // здесь закрываем предыдущий час
                 }
+            }
+        }
+
+        private static void FetchParameters(List<AskParamData> fetchParams, BackgroundWorker worker, TcpTuning parameters, IPEndPoint remoteEp, List<AskParamData> list)
+        {
+            try
+            {
+                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+                {
+                    socket.SendTimeout = parameters.SendTimeout;
+                    socket.ReceiveTimeout = parameters.ReceiveTimeout;
+                    socket.Connect(remoteEp);
+                    Thread.Sleep(500);
+                    if (socket.Connected)
+                    {
+                        foreach (var item in list)
+                        {
+                            socket.Send(PrepareFetchParam(item.Node, item.Func, item.RegAddr, item.TypeValue));
+                            Thread.Sleep(500);
+                            var buff = new byte[8192];
+                            var numBytes = socket.Receive(buff);
+                            if (numBytes > 0)
+                            {
+                                var answer = CleanAnswer(buff);
+                                if (CheckAnswer(answer, item.Node, item.Func, item.TypeValue))
+                                {
+                                    var result = EncodeFetchAnswer(answer, item.Node, item.Func, item.RegAddr, item.TypeValue, item.TypeSwap, item.EU);
+
+                                    if (item.LastValue != result.Value)
+                                    {
+                                        item.LastValue = result.Value;
+                                        var pointname = item.ParamName;
+                                        var propname = "PV";
+                                        var value = result.Value;
+                                        locEvClient.UpdateProperty("fetching", $"{item.Prefix}\\{pointname}", propname, value);
+                                    }
+                                }
+                            }
+                        }
+                        socket.Disconnect(false);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                worker.ReportProgress(-1, ex.Message);
             }
         }
 
